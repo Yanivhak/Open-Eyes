@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>לוח כיתתי — מרוץ הדלק | בעיניים פקוחות</title>
+<style>
+  :root{
+    --dark:#14502E; --dark2:#0E3A21; --green:#2E7D4F;
+    --gold:#E8B923; --orange:#E67E22; --paper:#F4ECD8;
+    --txt:#FFFFFF; --muted:#BFE0CC;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:Arial, "Helvetica Neue", sans-serif;
+    background:radial-gradient(120% 120% at 50% 0%, var(--green) 0%, var(--dark) 55%, var(--dark2) 100%);
+    color:var(--txt); min-height:100vh; padding:24px;
+    display:flex; flex-direction:column; align-items:center;
+  }
+  .brand{display:flex; align-items:center; gap:10px; margin-bottom:6px; opacity:.95;}
+  .dots{display:flex; gap:5px;}
+  .dots i{width:11px; height:11px; border-radius:50%; display:block;}
+  .brand b{font-size:18px; letter-spacing:.02em;}
+  .screen{display:none; width:100%; max-width:1100px; flex:1; flex-direction:column; align-items:center; justify-content:center;}
+  .screen.active{display:flex;}
+
+  h1{font-size:clamp(30px,5vw,52px); margin:6px 0; text-align:center;}
+  h2{font-size:clamp(16px,2.4vw,24px); color:var(--gold); font-weight:700; text-align:center; margin-bottom:26px;}
+  .sub{color:var(--muted); text-align:center; max-width:620px; line-height:1.6; margin-bottom:30px; font-size:17px;}
+
+  .btn{
+    font-family:inherit; font-size:22px; font-weight:900; color:var(--dark);
+    background:var(--gold); border:none; border-radius:16px; padding:18px 40px;
+    cursor:pointer; box-shadow:0 8px 0 #b8911a; transition:transform .08s, box-shadow .08s;
+  }
+  .btn:hover{transform:translateY(2px); box-shadow:0 6px 0 #b8911a;}
+  .btn:active{transform:translateY(6px); box-shadow:0 2px 0 #b8911a;}
+  .btn[disabled]{background:#6f8a78; box-shadow:0 8px 0 #51685a; color:#dfeee5; cursor:default;}
+  .btn.ghost{background:transparent; color:var(--gold); border:2px solid var(--gold); box-shadow:none; font-size:17px; padding:11px 22px;}
+  .btn.ghost:hover{background:rgba(232,185,35,.12); transform:none;}
+
+  /* ===== לובי ===== */
+  .lobby-grid{display:flex; gap:46px; align-items:center; flex-wrap:wrap; justify-content:center;}
+  .codebox{text-align:center;}
+  .codebox .lab{color:var(--muted); font-size:16px; margin-bottom:4px;}
+  .code{font-size:clamp(64px,13vw,128px); color:var(--gold); font-weight:900; letter-spacing:.12em; line-height:1;}
+  .qrwrap{background:#fff; padding:16px; border-radius:18px; box-shadow:0 14px 40px rgba(0,0,0,.35);}
+  .qrwrap img{display:block; width:clamp(220px,30vw,300px); height:auto;}
+  .glink{margin-top:12px; font-size:13px; color:var(--muted); direction:ltr; word-break:break-all; text-align:center; max-width:320px;}
+  .glink a{color:var(--gold);}
+
+  .counter{margin:34px 0 22px; text-align:center;}
+  .counter .num{font-size:clamp(48px,9vw,84px); font-weight:900; color:#fff; line-height:1;}
+  .counter .txt{color:var(--muted); font-size:18px; margin-top:4px;}
+
+  .conn{display:flex; align-items:center; gap:8px; font-size:14px; color:var(--muted); margin-bottom:18px;}
+  .conn .dot{width:11px; height:11px; border-radius:50%; background:#c0392b; box-shadow:0 0 8px #c0392b;}
+  .conn .dot.on{background:#27ae60; box-shadow:0 0 8px #27ae60;}
+
+  /* ===== תוצאות ===== */
+  .res-head{display:flex; align-items:center; gap:18px; flex-wrap:wrap; justify-content:center; margin-bottom:18px;}
+  .res-head .rcode{font-size:22px; color:var(--gold); font-weight:900; letter-spacing:.1em;}
+  .res-head .rcount{color:var(--muted); font-size:17px;}
+  .sortlab{color:var(--muted); font-size:15px; margin-bottom:8px; text-align:center;}
+
+  table{border-collapse:collapse; width:100%; max-width:840px; background:rgba(255,255,255,.04); border-radius:14px; overflow:hidden;}
+  thead th{background:rgba(232,185,35,.16); color:var(--gold); font-size:18px; padding:14px 16px; text-align:right; font-weight:900;}
+  thead th.c{text-align:center;}
+  tbody td{padding:13px 16px; font-size:20px; border-top:1px solid rgba(255,255,255,.08);}
+  tbody tr:nth-child(even){background:rgba(255,255,255,.03);}
+  td.nm{font-weight:700; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  td.tm{color:#fff; font-variant-numeric:tabular-nums; direction:ltr; text-align:right; font-weight:900;}
+  td.pk{min-width:240px;}
+  .barwrap{display:inline-block; width:160px; height:18px; background:rgba(255,255,255,.12); border-radius:9px; overflow:hidden; vertical-align:middle; margin-left:10px;}
+  .bar{height:100%; background:linear-gradient(90deg,var(--gold),var(--orange)); border-radius:9px;}
+  .pkn{font-weight:900; color:var(--gold); font-variant-numeric:tabular-nums;}
+
+  .question{
+    margin:30px auto 8px; max-width:760px; text-align:center;
+    background:rgba(0,0,0,.22); border:1px solid rgba(232,185,35,.35);
+    border-radius:16px; padding:22px 26px; font-size:clamp(18px,2.6vw,24px); line-height:1.5;
+  }
+  .question .qmark{color:var(--gold); font-weight:900; margin-left:6px;}
+  .controls{display:flex; gap:14px; margin-top:22px; flex-wrap:wrap; justify-content:center;}
+  .empty{color:var(--muted); text-align:center; padding:40px; font-size:18px;}
+  .foot{margin-top:auto; padding-top:26px; color:rgba(255,255,255,.4); font-size:12px; text-align:center;}
+</style>
+</head>
+<body>
+
+  <div class="brand">
+    <span class="dots">
+      <i style="background:#E74C3C"></i><i style="background:#E8B923"></i>
+      <i style="background:#27AE60"></i><i style="background:#3498DB"></i>
+      <i style="background:#8E44AD"></i>
+    </span>
+    <b>בעיניים פקוחות</b>
+  </div>
+
+  <!-- מסך פתיחה -->
+  <div id="intro" class="screen active">
+    <h1>לוח כיתתי</h1>
+    <h2>מרוץ הדלק · אותו רכב, עולם אחר</h2>
+    <p class="sub">
+      פתחו חדר, הקרינו את הקוד או ה-QR, והתלמידים ישחקו מהטלפון.
+      התוצאות נאספות בשקט — תראו רק כמה סיימו, ותחשפו את הטבלה כשתחליטו.
+    </p>
+    <button class="btn" id="btnOpen">פתח חדר חדש</button>
+  </div>
+
+  <!-- לובי -->
+  <div id="lobby" class="screen">
+    <div class="conn"><span class="dot" id="dot"></span><span id="connT">מתחבר…</span></div>
+    <div class="lobby-grid">
+      <div class="codebox">
+        <div class="lab">קוד החדר</div>
+        <div class="code" id="code">----</div>
+      </div>
+      <div>
+        <div class="qrwrap"><img id="qr" alt="QR למשחק"></div>
+        <div class="glink">סריקה לא עובדת? היכנסו ל:<br><a id="gl" href="#" target="_blank">…</a></div>
+      </div>
+    </div>
+    <div class="counter">
+      <div class="num" id="cnum">0</div>
+      <div class="txt">תלמידים סיימו</div>
+    </div>
+    <button class="btn" id="btnReveal" disabled>חשוף תוצאות</button>
+  </div>
+
+  <!-- תוצאות -->
+  <div id="results" class="screen">
+    <div class="res-head">
+      <span class="rcode">קוד: <span id="rcode">----</span></span>
+      <span class="rcount"><b id="rcount">0</b> סיימו</span>
+    </div>
+    <div class="sortlab" id="sortlab">ממוין לפי זמן סיום</div>
+    <table>
+      <thead><tr>
+        <th>כינוי</th>
+        <th>זמן סיום</th>
+        <th class="c">שיא מטען <span style="font-weight:400;font-size:13px;">(מתוך 10)</span></th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="question">
+      <span class="qmark">?</span> מה אתם שמים לב אליו כשמשווים בין <b>שיא המטען</b> לבין <b>זמן הסיום</b>
+    </div>
+    <div class="controls">
+      <button class="btn ghost" id="btnSort">מיין לפי שיא מטען</button>
+      <button class="btn ghost" id="btnQR">הצג שוב קוד / QR</button>
+    </div>
+  </div>
+
+  <div class="foot">המשחק עצמו אינו תלוי בחיבור — הלוח הוא תוספת. בדקו את הזרימה במכשירים לפני השיעור.</div>
+
+<script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></script>
+<script>if(typeof mqtt==='undefined'){document.write('<script src="https:\/\/cdn.jsdelivr.net\/npm\/mqtt@5.10.1\/dist\/mqtt.min.js"><\/script>');}</script>
+<script>
+/* ===== הגדרות — אותו ברוקרים/תבנית כמו שיעור 0 ===== */
+const BROKERS=["wss://broker.emqx.io:8084/mqtt","wss://broker.hivemq.com:8884/mqtt"];
+const NS="bep-delek-2026";                 // מרחב שמות נפרד משיעור 0
+const $=id=>document.getElementById(id);
+
+let client=null, room=null, myId=Math.random().toString(36).slice(2,10);
+let results=new Map();                      // name -> {name,time,peak}
+let revealed=false, sortBy='time';
+
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); window.scrollTo(0,0); }
+function setConn(on){ $('dot').classList.toggle('on',on); $('connT').textContent=on?'מחובר':'מנותק'; }
+
+/* פורמט זמן זהה למשחק: שניות → דקות:שניות.עשירית */
+function fmt(sec){ if(!isFinite(sec)) return '—'; const m=Math.floor(sec/60); const t=sec-m*60; return m+":"+(t<10?"0":"")+t.toFixed(1); }
+
+function gameUrl(){
+  let path=location.pathname.replace(/L1-board\.html.*$/i,'L1-energy-balance.html');
+  if(path===location.pathname){ path=path.replace(/[^\/]*$/,'L1-energy-balance.html'); } // נפילה אם השם שונה
+  return location.origin+path+'?room='+room;
+}
+
+function openRoom(){
+  room=Math.random().toString(36).slice(2,6).toUpperCase().replace(/[^A-Z0-9]/g,'X');
+  $('code').textContent=room; $('rcode').textContent=room;
+  const u=gameUrl();
+  $('qr').src='https://api.qrserver.com/v1/create-qr-code/?size=380x380&margin=2&data='+encodeURIComponent(u);
+  $('gl').textContent=u; $('gl').href=u;
+  show('lobby');
+  connect();
+}
+
+function connect(){
+  const root=NS+"/"+room; let i=0;
+  (function tryB(){
+    if(typeof mqtt==='undefined'){ setConn(false); return; }
+    if(i>=BROKERS.length){ alert('לא הצלחנו להתחבר לשרת. בדקו אינטרנט ונסו לרענן.'); return; }
+    const c=mqtt.connect(BROKERS[i++],{clientId:'b_'+myId+'_'+Math.random().toString(36).slice(2,6),clean:true,connectTimeout:6000,reconnectPeriod:2000});
+    let opened=false;
+    c.on('connect',()=>{ if(!opened){opened=true; client=c; c.subscribe(root+"/#",{qos:1},()=>setConn(true));} else setConn(true); });
+    c.on('close',()=>setConn(false));
+    c.on('error',()=>{ if(!opened){ c.end(true); tryB(); } });
+    c.on('message',(t,payload)=>{
+      let m; try{ m=JSON.parse(payload.toString()); }catch(e){ return; }
+      if(!m || m.t!=='result' || !m.name) return;
+      results.set(String(m.name), { name:String(m.name).slice(0,16), time:+m.time, peak:Math.max(0,Math.min(10, +m.peak||0)) });
+      updateCount();
+      if(revealed) render();
+    });
+  })();
+}
+
+function updateCount(){
+  const n=results.size;
+  $('cnum').textContent=n; $('rcount').textContent=n;
+  $('btnReveal').disabled = n===0;
+}
+
+function rows(){
+  const arr=[...results.values()];
+  arr.sort((a,b)=> sortBy==='time' ? (a.time-b.time) : (a.peak-b.peak) || (a.time-b.time));
+  return arr;
+}
+
+function render(){
+  const arr=rows(); const tb=$('tbody');
+  if(!arr.length){ tb.innerHTML='<tr><td colspan="3" class="empty">עדיין אין תוצאות…</td></tr>'; return; }
+  tb.innerHTML=arr.map(r=>
+    '<tr>'+
+      '<td class="nm">'+esc(r.name)+'</td>'+
+      '<td class="tm">'+fmt(r.time)+'</td>'+
+      '<td class="pk"><span class="barwrap"><span class="bar" style="width:'+(r.peak/10*100)+'%"></span></span><span class="pkn">'+r.peak+'</span></td>'+
+    '</tr>'
+  ).join('');
+  $('sortlab').textContent = sortBy==='time' ? 'ממוין לפי זמן סיום' : 'ממוין לפי שיא מטען';
+  $('btnSort').textContent = sortBy==='time' ? 'מיין לפי שיא מטען' : 'מיין לפי זמן';
+}
+
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* ===== אירועים ===== */
+$('btnOpen').onclick=openRoom;
+$('btnReveal').onclick=()=>{ revealed=true; show('results'); render(); };
+$('btnSort').onclick=()=>{ sortBy = sortBy==='time' ? 'peak' : 'time'; render(); };
+$('btnQR').onclick=()=>show('lobby');
+</script>
+</body>
+</html>
