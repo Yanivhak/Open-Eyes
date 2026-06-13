@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>בלשי המטבח — בעיניים פקוחות · שיעור 3</title>
+<style>
+  :root{
+    --green:#1B5E33; --green-lt:#E8F0EA; --dark:#1C2B22; --red:#C0392B;
+    --gold:#E8B923; --orange:#E67E22; --white:#FFFFFF; --mute:#6B7C71; --sub:#9DB3A4;
+    --line:#D4E0D7;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:Arial,"Helvetica Neue",sans-serif; background:var(--green-lt);
+    color:var(--dark); direction:rtl; min-height:100vh;
+    display:flex; align-items:flex-start; justify-content:center; padding:24px;}
+  .wrap{width:100%; max-width:1000px; background:var(--white);
+    border-radius:18px; box-shadow:0 10px 40px rgba(27,94,51,.12); overflow:hidden;}
+  header{background:var(--green); color:var(--white); padding:22px 30px; position:relative;}
+  .dots{position:absolute; top:20px; left:26px; display:flex; gap:9px;}
+  .dots span{width:15px; height:15px; border-radius:50%; display:block;}
+  .dots .d1{background:var(--green-lt);} .dots .d2{background:var(--gold);}
+  .dots .d3{background:var(--orange);} .dots .d4{background:var(--red);}
+  header h1{font-size:26px; font-weight:bold;}
+  header p{font-size:15px; color:#D8E3DB; margin-top:6px;}
+  main{padding:26px 30px 32px;}
+  .intro{font-size:16px; color:var(--mute); margin-bottom:20px; line-height:1.55;}
+  .label{font-size:14px; color:var(--green); font-weight:bold; margin-bottom:10px;}
+  .step-tag{display:inline-block; background:var(--green); color:#fff; font-size:12px;
+    font-weight:bold; border-radius:20px; padding:3px 11px; margin-bottom:10px;}
+  .products{display:grid; grid-template-columns:repeat(4,1fr); gap:11px; margin-bottom:6px;}
+  @media(max-width:760px){.products{grid-template-columns:repeat(2,1fr);}}
+  .product{border:2px solid var(--line); background:var(--white); border-radius:12px;
+    padding:13px 14px; cursor:pointer; transition:.16s; text-align:right;}
+  .product:hover{border-color:var(--green); transform:translateY(-2px);}
+  .product.active{border-color:var(--green); background:var(--green-lt);}
+  .product .pname{font-size:15px; font-weight:bold; color:var(--dark); line-height:1.3;}
+  .product .psub{font-size:12px; color:var(--mute); margin-top:4px;}
+  .product .adv{display:inline-block; background:var(--gold); color:#5a4a00; font-size:10px;
+    font-weight:bold; border-radius:10px; padding:2px 8px; margin-top:6px;}
+  .panel{margin-top:22px; border:1px solid var(--line); border-radius:14px;
+    padding:20px 22px; background:#FCFDFC; display:none;}
+  .panel.show{display:block; animation:fade .3s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+  .panel h2{font-size:19px; color:var(--green); margin-bottom:4px;}
+  .ing-list{font-size:17px; color:var(--dark); line-height:1.9; background:var(--white);
+    border:1px dashed var(--sub); border-radius:10px; padding:16px 20px; margin:12px 0 20px;}
+  .ing-list .sugar{color:var(--orange); font-weight:bold;}
+  .tests{display:flex; flex-direction:column; gap:14px;}
+  .test{border:1px solid var(--line); border-radius:12px; overflow:hidden; background:#fff;}
+  .test-top{padding:13px 16px;}
+  .test-title{font-size:15px; font-weight:bold; color:var(--dark); margin-bottom:3px;}
+  .test-title .n{display:inline-flex; align-items:center; justify-content:center;
+    width:24px; height:24px; border-radius:50%; background:var(--green); color:#fff;
+    font-size:12px; margin-left:9px;}
+  .test-q{font-size:13.5px; color:var(--mute); margin:2px 0 12px;}
+  .decide{display:flex; gap:10px;}
+  .dbtn{flex:1; font-family:inherit; font-size:14px; font-weight:bold; cursor:pointer;
+    border-radius:9px; padding:10px; transition:.15s; border:1.5px solid var(--line); background:#fff; color:var(--dark);}
+  .dbtn.clean:hover{border-color:var(--green); background:var(--green-lt);}
+  .dbtn.flag:hover{border-color:var(--orange); background:#FDF0E6;}
+  .dbtn.chosen{border-width:2px;}
+  .dbtn.chosen.pos{border-color:var(--green); background:var(--green-lt); color:var(--green);}
+  .dbtn.chosen.neg{border-color:var(--orange); background:#FDF0E6; color:var(--orange);}
+  .dbtn:disabled{cursor:default; opacity:.5;}
+  .reveal{margin-top:13px; padding:12px 14px; border-radius:9px; font-size:14px; line-height:1.55; display:none;}
+  .reveal.show{display:block; animation:fade .25s ease;}
+  .reveal.r-flag{background:#FDF0E6; border:1px solid #F0C9A6;}
+  .reveal.r-clean{background:var(--green-lt); border:1px solid #BFD8C7;}
+  .reveal .tag{font-weight:bold; display:block; margin-bottom:5px;}
+  .reveal.r-flag .tag{color:var(--orange);} .reveal.r-clean .tag{color:var(--green);}
+  .match{font-size:13px; margin-top:8px; padding:7px 11px; border-radius:7px; display:flex; align-items:center; gap:7px;}
+  .match.hit{background:#DDF0E3; color:var(--green); font-weight:bold;}
+  .match.miss{background:#FCEEDD; color:#9A5B16; font-weight:bold; border:1px dashed #D99A4E;}
+  /* detective report card */
+  .report{margin-top:24px; border-radius:16px; overflow:hidden; display:none; border:2px solid var(--green);}
+  .report.show{display:block; animation:fade .4s ease;}
+  .report-head{background:var(--green); color:#fff; padding:18px 22px; text-align:center;}
+  .report-head .badge{font-size:13px; letter-spacing:1px; color:var(--gold); font-weight:bold; margin-bottom:6px;}
+  .report-head .score{font-size:24px; font-weight:bold;}
+  .report-head .encourage{font-size:14px; color:#D8E3DB; margin-top:6px; line-height:1.5;}
+  .report-body{background:#fff; padding:20px 22px;}
+  .report-body .flagcount{font-size:17px; font-weight:bold; color:var(--dark); margin-bottom:10px;}
+  .report-body .flagcount .num{color:var(--orange);}
+  .report-body .conclusion{font-size:15px; line-height:1.6; color:var(--dark);}
+  .report-body .conclusion b{color:var(--green);}
+  .corrections{margin-top:16px;}
+  .corrections .ctitle{font-size:13px; font-weight:bold; color:#9A5B16; margin-bottom:8px;}
+  .corr{background:#FCEEDD; border:1px dashed #D99A4E; border-radius:9px; padding:10px 13px;
+    font-size:13.5px; color:#7a4a12; line-height:1.5; margin-bottom:8px;}
+  .controls{margin-top:22px;}
+  .btn{font-family:inherit; font-size:15px; font-weight:bold; border-radius:10px;
+    padding:11px 22px; cursor:pointer; transition:.15s;
+    background:transparent; color:var(--green); border:1px solid var(--green);}
+  .btn:hover{background:var(--green-lt);}
+  .hint{font-size:13px; color:var(--mute); margin-top:12px; font-style:italic;}
+  /* end-session summary */
+  .endbar{margin-top:22px; display:flex; gap:14px; align-items:center; flex-wrap:wrap;
+    justify-content:center; padding-top:18px; border-top:1px dashed var(--line);}
+  .btn-finish{background:var(--green); color:#fff; border:none; font-size:17px; padding:14px 30px;}
+  .btn-finish:hover{background:#14502E;}
+  .endhint2{font-size:14px; color:var(--mute); font-style:italic; width:100%; text-align:center;}
+  .summary{margin-top:24px; border-radius:18px; overflow:hidden; display:none; border:3px solid var(--gold);}
+  .summary.show{display:block; animation:fade .4s ease;}
+  .summary-head{background:var(--green); color:#fff; padding:32px 26px; text-align:center;}
+  .summary-head .badge{font-size:15px; letter-spacing:2px; color:var(--gold); font-weight:bold; margin-bottom:12px;}
+  .summary-head .big{font-size:28px; font-weight:bold; line-height:1.45;}
+  .summary-body{background:#fff; padding:30px 28px;}
+  .summary-body .msg{font-size:18px; line-height:1.8; color:var(--dark);}
+  .summary-body .msg b{color:var(--green);}
+  .summary-body .takeaway{margin-top:22px; background:var(--green-lt); border-radius:12px;
+    padding:20px 22px; font-size:18px; line-height:1.75; color:var(--dark); font-weight:bold;}
+  footer{padding:14px 30px; border-top:1px solid var(--line); font-size:12px; color:var(--sub); text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span><span class="d4"></span></div>
+    <h1>בלשי המטבח</h1>
+    <p>שיעור 3 · בעיניים פקוחות — פצחו את המוצר</p>
+  </header>
+
+  <main>
+    <p class="intro">בוחרים מוצר, וקוראים את רשימת הרכיבים. עוברים על שלוש בדיקות — בכל אחת <b>אתם</b> מנחשים קודם: נדלקה נורת אזהרה או שהכל נקי? לוחצים, ורק אז מתגלה התשובה. כל נורה היא סימן שהמוצר עבר עיבוד והתרחק מהטבע.</p>
+    <p class="intro" style="background:var(--green-lt); border-radius:10px; padding:12px 16px; color:var(--dark); margin-top:-8px;">חשוב לזכור: <b>אפשר לאכול הכל</b> — אין אוכל "אסור". השאלה היא כמה, וכל כמה זמן. הנורות לא נותנות ציון למוצר, הן עוזרות לכם לדעת מה אתם אוכלים.</p>
+
+    <span class="step-tag">שלב 1 · בחרו מוצר</span>
+    <div class="products" id="products"></div>
+
+    <div class="panel" id="panel">
+      <h2 id="pName"></h2>
+      <div class="label" style="margin-top:8px;">רשימת הרכיבים:</div>
+      <div class="ing-list" id="ingList"></div>
+
+      <span class="step-tag">שלב 2 · שלוש הבדיקות</span>
+      <div class="tests" id="tests"></div>
+
+      <div class="report" id="report">
+        <div class="report-head">
+          <div class="badge">★ דוח הבלש ★</div>
+          <div class="score" id="scoreLine"></div>
+          <div class="encourage" id="encourageLine"></div>
+        </div>
+        <div class="report-body">
+          <div class="flagcount" id="flagCount"></div>
+          <div class="conclusion" id="conclusion"></div>
+          <div class="corrections" id="corrections"></div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="btn" id="resetBtn">בחרו מוצר אחר</button>
+      </div>
+    </div>
+
+    <div class="endbar" id="endbar" style="display:none;">
+      <button class="btn btn-finish" id="finishBtn">סיום וסיכום החקירה</button>
+      <span class="endhint2" id="endhint"></span>
+    </div>
+
+    <div class="summary" id="summary">
+      <div class="summary-head">
+        <div class="badge">★ סיכום החקירה ★</div>
+        <div class="big" id="summaryBig"></div>
+      </div>
+      <div class="summary-body">
+        <div class="msg" id="summaryMsg"></div>
+        <div class="takeaway" id="summaryTakeaway"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer>&#x200F;&#169;&#x200F; ד״ר יניב חכים · בעיניים פקוחות · פותח בסיוע כלי <span dir="ltr">AI</span></footer>
+</div>
+
+<script>
+// Each product: 3 tests. Each test has flag (true=warning lights up) + reveal text + a short "correction" used if the student misses it.
+const PRODUCTS = [
+  { name:"שמן זית", sub:"בקבוק שמן", note:"שמן זית הוא <b>מזון טוב</b> — אבל הוא מרוכז: מעט זיתים הופכים להרבה שמן. איש לא אוכל 50 זיתים, אבל קל לשפוך כמה כפות שמן בלי לשים לב. זו בדיוק מה שהנורות מודדות — לא אם המזון „בריא”, אלא כמה קל לצרוך ממנו יותר ממה שהטבע נתן. זה נכון לכל מרכיבי הבישול — סוכר, מלח ושמן הם תמציות מרוכזות.",
+    ingredients:["שמן זית"],
+    tests:[
+      {flag:false, title:"רשימת הרכיבים", text:"רכיב אחד בלבד — שמן זית. קצר ומוכר.", corr:"בשמן זית רכיב אחד — מבחן הרכיבים נקי."},
+      {flag:true, title:"סדר הרכיבים", text:"הרכיב הראשון הוא שמן — וזה מדליק נורה. לא כי שמן זית „רע”, אלא כי הוא מרוכז: הרבה זיתים הפכו לכף שמן אחת.", corr:"שימו לב — הרכיב הראשון הוא שמן, אז נדלקת נורה. השמן מרוכז — הרבה זיתים בכף אחת."},
+      {flag:true, title:"נראה כמו האוכל בטבע?", text:"שמן לא נראה כמו זית — הוא נסחט וזוקק. עבר עיבוד.", corr:"שימו לב — שמן לא נראה כמו הזית שממנו הוא בא, אז נדלקת נורה."}
+    ] },
+
+  { name:"דבש", sub:"מטבל דבש טבעי", note:"דבש נחשב „ממתק בריא”, ויש בו באמת עקבות של ויטמינים ומינרלים — אבל הוא כמעט כולו סוכר. כשאתם שמים כפית דבש בתה, אתם בעצם שמים כפית וחצי סוכר. ודווקא בגלל שדבש סמיך וכבד, כפית דבש מכניסה קצת יותר סוכר מכפית סוכר — לא פחות. הגוף כמעט לא מבחין בינו לבין סוכר רגיל.",
+    ingredients:["דבש"],
+    tests:[
+      {flag:false, title:"רשימת הרכיבים", text:"רכיב אחד — דבש. קצר ומוכר.", corr:"בדבש רכיב אחד — מבחן הרכיבים נקי."},
+      {flag:false, title:"סדר הרכיבים", text:"הרכיב הראשון הוא „דבש” — לא כתוב „סוכר” או „שמן”, אז הבדיקה נקיה.", corr:"הרכיב הראשון הוא „דבש”, לא „סוכר” — אז הבדיקה נקיה."},
+      {flag:true, title:"נראה כמו האוכל בטבע?", text:"דבש הוא מרוכז — לא אוכלים דבש כמו שהוא בכמויות גדולות ישירות מהטבע.", corr:"שימו לב — דבש הוא תמצית מרוכזת מאוד, אז נדלקת נורה."}
+    ] },
+
+  { name:"מיץ תפוזים טבעי", sub:"מיץ סחוט", note:"מיץ תפוזים טבעי נשמע בריא, ובאמת יש בו ויטמין C. אבל כוס אחת = הסוכר של 3–4 תפוזים שלמים, בערך 5 כפיות סוכר — כמעט כמו פחית קולה. איש לא אוכל 4 תפוזים ברצף, אבל קל לשתות אותם בכוס — ובלי הסיבים שמאטים את הסוכר ומשביעים. מיץ בבקבוק מהסופר מאבד גם חלק מהויטמינים בגלל החום והאחסון — אבל הבעיה העיקרית היא הסוכר המרוכז.",
+    ingredients:["100% מיץ תפוזים סחוט טבעי"],
+    tests:[
+      {flag:false, title:"רשימת הרכיבים", text:"רכיב אחד — 100% מיץ תפוזים סחוט טבעי. קצר ומוכר.", corr:"במיץ 100% סחוט רכיב אחד — מבחן הרכיבים נקי."},
+      {flag:false, title:"סדר הרכיבים", text:"במיץ 100% טבעי כתוב „מיץ תפוזים” — לא „סוכר” או „שמן”, אז הבדיקה נקיה.", corr:"הרכיב הראשון הוא „מיץ תפוזים”, לא „סוכר” — אז הבדיקה נקיה. (במיץ תעשייתי זול לפעמים כן מוסיפים סוכר — ואז הוא יופיע ברכיבים.)"},
+      {flag:true, title:"נראה כמו האוכל בטבע?", text:"מיץ לא נראה כמו תפוז — סחטו אותו והוציאו את הסיבים. עבר עיבוד.", corr:"שימו לב — מיץ לא נראה כמו תפוז שלם (אין סיבים), אז נדלקת נורה."}
+    ] },
+
+  { name:"ביצה", sub:"ביצה טרייה",
+    ingredients:["ביצה"],
+    tests:[
+      {flag:false, title:"רשימת הרכיבים", text:"רכיב אחד, מוכר לגמרי.", corr:"בביצה יש רכיב אחד — מבחן הרכיבים נקי."},
+      {flag:false, title:"סדר הרכיבים", text:"אין סוכר ואין שמן מוסף.", corr:"אין פה סוכר או שמן ראשון — אין נורה."},
+      {flag:false, title:"נראה כמו האוכל בטבע?", text:"ביצה היא ביצה — בדיוק כמו בטבע.", corr:"ביצה נראית כמו ביצה מהטבע — אין נורה."}
+    ] },
+
+  { name:"לחם מחיטה מלאה", sub:"כיכר לחם טרי",
+    ingredients:["קמח חיטה מלא","מים","שמרים","מלח","שמן זית"],
+    tests:[
+      {flag:false, title:"רשימת הרכיבים", text:"חמישה רכיבים, כולם מוכרים — קמח, מים, שמרים, מלח, שמן.", corr:"בלחם חמישה רכיבים מוכרים — לא נוסחה כימית. נקי."},
+      {flag:false, title:"סדר הרכיבים", text:"הרכיב הראשון הוא קמח — בסיס מוכר, לא סוכר ולא שמן.", corr:"הרכיב הראשון הוא קמח, לא סוכר או שמן — אין נורה."},
+      {flag:true, title:"נראה כמו האוכל בטבע?", text:"לחם כבר לא נראה כמו חיטה — נטחן, נילוש ונאפה. הוא עבר עיבוד. (אבל עיבוד פשוט שאפשר לעשות בבית.)", corr:"שימו לב — לחם לא נראה כמו החיטה שממנה הוא עשוי, אז כאן כן נדלקת נורה: הוא עבר עיבוד."}
+    ] },
+
+  { name:"גבינה צהובה", sub:"פרוסות גבינה",
+    ingredients:["חלב","מלח","תרבית","אנזים","חומר מתחלב"],
+    tests:[
+      {flag:false, title:"רשימת הרכיבים", text:"חמישה רכיבים, רובם מוכרים מהמטבח — חלב, מלח, תרבית.", corr:"בגבינה צהובה חמישה רכיבים, רובם מוכרים — מבחן הרכיבים נקי."},
+      {flag:false, title:"סדר הרכיבים", text:"הרכיב הראשון הוא חלב — בסיס מוכר, לא סוכר או שמן.", corr:"הרכיב הראשון הוא חלב, לא סוכר או שמן — אין נורה."},
+      {flag:true, title:"נראה כמו האוכל בטבע?", text:"גבינה צהובה כבר לא נראית כמו חלב — עברה עיבוד שמשנה אותה לגמרי.", corr:"שימו לב — גבינה צהובה לא נראית כמו החלב שממנו היא עשויה, אז כאן נדלקת נורה."}
+    ] },
+
+  { name:"שימורי תירס", sub:"קופסת שימורים",
+    ingredients:["תירס","מים","מלח","סוכר"],
+    tests:[
+      {flag:false, title:"רשימת הרכיבים", text:"ארבעה רכיבים, כולם מוכרים — תירס, מים, מלח, סוכר.", corr:"בשימורי תירס ארבעה רכיבים מוכרים — מבחן הרכיבים נקי."},
+      {flag:false, title:"סדר הרכיבים", text:"הרכיב הראשון הוא תירס — לא סוכר ולא שמן (יש קצת סוכר, אבל בסוף הרשימה).", corr:"הרכיב הראשון הוא תירס, לא סוכר או שמן — אין נורה."},
+      {flag:true, title:"נראה כמו האוכל בטבע?", text:"התירס עצמו עדיין מוכר, אבל הוא עבר עיבוד — בושל, נארז ונשמר במים ומלח.", corr:"שימו לב — התירס עבר עיבוד (שימור), אז כאן נדלקת נורה. אבל הוא עדיין קרוב יחסית לטבע."}
+    ] },
+
+  { name:"חטיף תירס במילוי", sub:"חטיף ארוז צבעוני",
+    ingredients:["סוכר","קמח תירס","שמן דקל","מי גבינה","חומר טעם וריח","מונוסודיום גלוטמט","צבעי מאכל (E102, E110)","מתחלב (E471)"],
+    tests:[
+      {flag:true, title:"רשימת הרכיבים", text:"שמונה רכיבים, כמה כמו נוסחה כימית — מונוסודיום גלוטמט, E471, צבעי מאכל.", corr:"שימו לב — בחטיף יש 8 רכיבים, אז הוא לא עובר את מבחן הרכיבים. כאן נדלקת נורה."},
+      {flag:true, title:"סדר הרכיבים", text:"הרכיב הראשון הוא סוכר — הגדול בכמות.", corr:"שימו לב — הרכיב הראשון הוא סוכר, וזה סימן אזהרה. נדלקת נורה."},
+      {flag:true, title:"נראה כמו האוכל בטבע?", text:"לא נראה כמו שום דבר שגדל בטבע — נוצר מחדש מרכיבים מעובדים.", corr:"שימו לב — החטיף לא נראה כמו כלום בטבע. נדלקת נורה."}
+    ] },
+
+  { name:"שניצל תירס קפוא", sub:"מוצר קפוא לחימום",
+    ingredients:["שמן צמחי","פירורי לחם","חלבון מהצומח","עמילן","מלח","אבקת שום","חומרי טעם","מייצב (E450)"],
+    tests:[
+      {flag:true, title:"רשימת הרכיבים", text:"שמונה רכיבים, כולל חלבון משוחזר, עמילן ומייצב E450.", corr:"שימו לב — 8 רכיבים, חלקם תעשייתיים. לא עובר את מבחן הרכיבים. נדלקת נורה."},
+      {flag:true, title:"סדר הרכיבים", text:"הרכיב הראשון הוא שמן צמחי — הגדול בכמות.", corr:"שימו לב — הרכיב הראשון הוא שמן. סימן אזהרה, נדלקת נורה."},
+      {flag:true, title:"נראה כמו האוכל בטבע?", text:"לא נראה כמו חומר גלם טבעי — מוצר תעשייתי משוחזר.", corr:"שימו לב — לא נראה כמו כלום בטבע. נדלקת נורה."}
+    ] },
+
+  { name:"קורנפלקס מסוכר", sub:"דגני בוקר צבעוניים",
+    ingredients:["דגני תירס","סוכר","סירופ תירס","מלח","חומר טעם","צבעי מאכל","ויטמינים"],
+    tests:[
+      {flag:true, title:"רשימת הרכיבים", text:"שבעה רכיבים, כולל צבעי מאכל וחומרי טעם.", corr:"שימו לב — 7 רכיבים, כולל צבעי מאכל. לא עובר את מבחן הרכיבים. נדלקת נורה."},
+      {flag:true, title:"סדר הרכיבים", text:"מיד אחרי דגני התירס באים סוכר וסירופ — הרבה סוכר.", corr:"שימו לב — סוכר וסירופ ממש בהתחלה. סימן אזהרה, נדלקת נורה."},
+      {flag:true, title:"נראה כמו האוכל בטבע?", text:"לא נראה כמו תירס שגדל בשדה — עובד ועוצב מחדש.", corr:"שימו לב — לא נראה כמו תירס מהשדה. נדלקת נורה."}
+    ] },
+
+  { name:"דגני בוקר „בריאים”", sub:"מוצר שנראה תמים", splitSugar:true,
+    ingredients:["דגני שיבולת שועל","סירופ תירס","קמח חיטה","דבש","דקסטרוז","שמן צמחי","מלח","חומר טעם"],
+    tests:[
+      {flag:true, title:"רשימת הרכיבים", text:"שמונה רכיבים, כולל סירופ תירס, דקסטרוז וחומר טעם.", corr:"שימו לב — 8 רכיבים. לא עובר את מבחן הרכיבים. נדלקת נורה."},
+      {flag:false, title:"סדר הרכיבים", text:"כאן הטריק! הרכיב הראשון הוא דגני שועל — נראה תמים, אז הבדיקה הזו <b>לא</b> מדליקה נורה. אבל סירופ תירס, דבש ודקסטרוז הם כולם סוכר בשמות שונים — אילו חיברו אותם, הסוכר היה ראשון. פיצלו אותו בכוונה כדי לעבור את הבדיקה. <b>ככה עובדים עלינו.</b>", corr:"שימו לב לטריק — הרכיב הראשון הוא שועל, אז הבדיקה הזו נקייה. אבל הסוכר פוצל לשלושה שמות (סירופ תירס, דבש, דקסטרוז) כדי להסתתר. תמיד ספרו כמה סוגי סוכר יש, לא רק את הראשון."},
+      {flag:true, title:"נראה כמו האוכל בטבע?", text:"לא נראה כמו שיבולת שועל מהשדה — עובד ועוצב.", corr:"שימו לב — לא נראה כמו שיבולת שועל מהשדה. נדלקת נורה."}
+    ] },
+
+  { name:"משקה אנרגיה", sub:"פחית משקה ממותק",
+    ingredients:["מים","סוכר","חומצה ציטרית","קפאין","טאורין","חומר טעם","צבע מאכל","חומר משמר"],
+    tests:[
+      {flag:true, title:"רשימת הרכיבים", text:"שמונה רכיבים, רובם לא מהמטבח — טאורין, חומר משמר, צבע מאכל.", corr:"שימו לב — 8 רכיבים, רובם לא מוכרים. לא עובר את מבחן הרכיבים. נדלקת נורה."},
+      {flag:true, title:"סדר הרכיבים", text:"הרכיב השני (אחרי מים) הוא סוכר — הרבה סוכר.", corr:"שימו לב — מיד אחרי המים בא סוכר. סימן אזהרה, נדלקת נורה."},
+      {flag:true, title:"נראה כמו האוכל בטבע?", text:"משקה מעובד לגמרי — שום דבר בו לא נראה כמו מקור טבעי.", corr:"שימו לב — שום דבר במשקה לא נראה טבעי. נדלקת נורה."}
+    ] }
+];
+
+let selected=null;
+let decided=[null,null,null];
+const investigated=new Set(); // distinct products fully investigated
+
+const productsEl=document.getElementById('products');
+const panel=document.getElementById('panel');
+const pName=document.getElementById('pName');
+const ingList=document.getElementById('ingList');
+const testsEl=document.getElementById('tests');
+const report=document.getElementById('report');
+const scoreLine=document.getElementById('scoreLine');
+const encourageLine=document.getElementById('encourageLine');
+const flagCount=document.getElementById('flagCount');
+const conclusion=document.getElementById('conclusion');
+const corrections=document.getElementById('corrections');
+const resetBtn=document.getElementById('resetBtn');
+const endbar=document.getElementById('endbar');
+const endhint=document.getElementById('endhint');
+const finishBtn=document.getElementById('finishBtn');
+const summary=document.getElementById('summary');
+const summaryBig=document.getElementById('summaryBig');
+const summaryMsg=document.getElementById('summaryMsg');
+const summaryTakeaway=document.getElementById('summaryTakeaway');
+
+PRODUCTS.forEach((p,i)=>{
+  const c=document.createElement('div');
+  c.className='product';
+  c.innerHTML=`<div class="pname">${p.name}</div><div class="psub">${p.sub}</div>${p.splitSugar?'<span class="adv">מתקדם · טריק נסתר</span>':''}`;
+  c.onclick=()=>selectProduct(i,c);
+  productsEl.appendChild(c);
+});
+
+function selectProduct(i,card){
+  selected=i; decided=[null,null,null];
+  document.querySelectorAll('.product').forEach(c=>c.classList.remove('active'));
+  card.classList.add('active');
+  const p=PRODUCTS[i];
+  pName.textContent=p.name;
+  if(p.splitSugar){
+    const sugars=["סירופ תירס","דבש","דקסטרוז"];
+    ingList.innerHTML=p.ingredients.map(ing=>sugars.includes(ing)?`<span class="sugar">${ing}</span>`:ing).join('، ');
+  } else {
+    ingList.innerHTML=p.ingredients.join('، ');
+  }
+  buildTests(p);
+  report.classList.remove('show');
+  summary.classList.remove('show');
+  panel.classList.add('show');
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function buildTests(p){
+  testsEl.innerHTML='';
+  p.tests.forEach((t,idx)=>{
+    const q = idx===0 ? "חמישה רכיבים+ או שמות שנראים כמו נוסחה כימית?" :
+              idx===1 ? "הרכיב הראשון (הגדול בכמות) הוא סוכר או שמן?" :
+                        "תפוח נראה כמו תפוח. לחם כבר לא נראה כמו חיטה.";
+    const w=document.createElement('div'); w.className='test';
+    w.innerHTML=`
+      <div class="test-top">
+        <div class="test-title"><span class="n">${idx+1}</span>${t.title}</div>
+        <div class="test-q">${q}</div>
+        <div class="decide">
+          <button class="dbtn flag" data-i="${idx}" data-call="flag">⚑ נדלקה נורה</button>
+          <button class="dbtn clean" data-i="${idx}" data-call="clean">✓ נקי</button>
+        </div>
+        <div class="reveal" id="rev${idx}"></div>
+      </div>`;
+    testsEl.appendChild(w);
+  });
+  testsEl.querySelectorAll('.dbtn').forEach(b=>{
+    b.onclick=()=>decide(parseInt(b.dataset.i), b.dataset.call, PRODUCTS[selected]);
+  });
+}
+
+function decide(idx, call, p){
+  if(decided[idx]!==null) return;
+  decided[idx]=call;
+  const t=p.tests[idx];
+  const truth = t.flag ? 'flag' : 'clean';
+  const correct = (call===truth);
+  const isPos = (call==='clean');
+  const buttons=testsEl.querySelectorAll(`.dbtn[data-i="${idx}"]`);
+  buttons.forEach(b=>{ b.disabled=true;
+    if(b.dataset.call===call) b.classList.add('chosen', isPos?'pos':'neg'); });
+  const rev=document.getElementById('rev'+idx);
+  rev.className='reveal show '+(t.flag?'r-flag':'r-clean');
+  const tl = t.flag ? '⚑ נדלקה נורה' : '✓ נקי';
+  const m = correct
+    ? '<div class="match hit"><span>✓</span>קלעתם!</div>'
+    : '<div class="match miss"><span>↔</span>ההכרעה שלכם שונה מהבדיקה.</div>';
+  rev.innerHTML=`<span class="tag">${tl}</span>${t.text}${m}`;
+  if(decided.every(d=>d!==null)) showReport(p);
+}
+
+function showReport(p){
+  const flags=p.tests.filter(t=>t.flag).length;
+  let correctCount=0; const missed=[];
+  p.tests.forEach((t,idx)=>{
+    const truth=t.flag?'flag':'clean';
+    if(decided[idx]===truth) correctCount++; else missed.push(t);
+  });
+  // student score header
+  if(correctCount===3){
+    scoreLine.textContent='וואו! ענית נכון על 3 מתוך 3 🔍';
+    encourageLine.textContent='בלש אמיתי. זיהית בדיוק את כל הסימנים.';
+  } else {
+    scoreLine.textContent=`ענית נכון על ${correctCount} מתוך 3`;
+    encourageLine.textContent='לא נורא — החומר חדש ומבלבל, ובשביל זה אנחנו כאן. הנה מה שכדאי לשים לב אליו:';
+  }
+  // product flag count (separate number)
+  if(p.splitSugar){
+    flagCount.innerHTML=`המוצר הזה הדליק <span class="num">${flags}</span> מתוך 3 נורות — אבל באמת זה מוצר עם <span class="num">3</span>.`;
+  } else {
+    flagCount.innerHTML=`המוצר הזה הדליק <span class="num">${flags}</span> מתוך 3 נורות.`;
+  }
+  // conclusion: special case for split-sugar (hidden flag), else 0 / middle / 3
+  let c;
+  if(p.splitSugar){
+    c='שימו לב — מבחן סדר הרכיבים יצא <b>נקי</b>, וזה נכון: הרכיב הראשון הוא שיבולת שועל, לא סוכר. <b>אבל זה בדיוק הטריק.</b> הסוכר פוצל לשלושה שמות (סירופ תירס, דבש, דקסטרוז) כדי שאף אחד לא יהיה ראשון — וכך הסתתרה נורה. באמת זה מוצר <b>אולטרא־מעובד עם 3 נורות</b>. הכלי שלנו טוב, אבל התעשייה יודעת לעקוף אותו — ולכן תמיד כדאי לספור כמה סוגי סוכר יש, לא רק מה ראשון.';
+  } else if(flags===0){
+    c='לא נדלקה אף נורה. זה <b>מזון גולמי</b> — קרוב לטבע, כמעט לא עבר עיבוד. הבסיס הטוב של התזונה.';
+  } else if(flags===3){
+    c='כל שלוש הנורות נדלקו. זה מוצר <b>אולטרא־מעובד</b> — תוכנן מהיסוד: הרבה רכיבים, סוכר או שמן דומיננטי, ולא נראה כמו כלום בטבע. הכי רחוק מהטבע. גם אותו אפשר לאכול — אבל עכשיו אתם <b>יודעים</b> מה זה.';
+  } else {
+    c='נדלקו כמה נורות. המוצר הזה <b>עבר עיבוד</b> והתרחק מהטבע — אבל זה <b>לא</b> אומר שהוא "אסור". אפשר לאכול, השאלה היא כמה וכל כמה זמן.';
+  }
+  conclusion.innerHTML = c + (p.note ? '<br><br>'+p.note : '');
+  // corrections only for missed tests
+  if(missed.length>0){
+    corrections.innerHTML='<div class="ctitle">מה כדאי לשים לב אליו:</div>'+
+      missed.map(t=>`<div class="corr">${t.corr}</div>`).join('');
+  } else {
+    corrections.innerHTML='';
+  }
+  report.classList.add('show');
+  investigated.add(selected);
+  endbar.style.display='flex';
+  endhint.textContent = `חקרתם ${investigated.size} ${investigated.size===1?'מוצר':'מוצרים'} עד כה.`;
+  report.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+finishBtn.onclick=()=>{
+  const n=investigated.size;
+  summaryBig.textContent = `חקרתם ${n} ${n===1?'מוצר':'מוצרים'} והפעלתם על כל אחד את שלוש הבדיקות 🔍`;
+  summaryMsg.innerHTML='עכשיו יש לכם <b>כלי אמיתי לחיים</b> — שלוש שאלות פשוטות שאפשר לשאול מול כל מוצר בסופרמרקט, בלי להיות מדענים. כל נורה שמצאתם היא סימן שהמוצר עבר עיבוד והתרחק מהטבע.';
+  summaryTakeaway.innerHTML='אפשר לאכול מהכל — אין אוכל "אסור". אבל עכשיו אתם יודעים לזהות כמה מוצר עבר עיבוד, וזה עוזר להחליט כמה ממנו לאכול וכל כמה זמן. ככל שמוצר רחוק יותר מהטבע — פחות ממנו, ולא בכל יום.';
+  // hide panel + report, show summary
+  panel.classList.remove('show');
+  endbar.style.display='none';
+  document.querySelectorAll('.product').forEach(c=>c.classList.remove('active'));
+  summary.classList.add('show');
+  summary.scrollIntoView({behavior:'smooth',block:'start'});
+};
+
+resetBtn.onclick=()=>{
+  selected=null;
+  document.querySelectorAll('.product').forEach(c=>c.classList.remove('active'));
+  panel.classList.remove('show');
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+</script>
+</body>
+</html>

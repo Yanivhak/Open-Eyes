@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>באיזו מגירה? · בעיניים פקוחות</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg1:#101C38; --bg2:#1B2A4D; --bg-top:#2A3C6E;
+  --ink:#F7F4EC; --dim:#AAB4CF; --gold:#FFD166; --head:#FFD166;
+  --teal:#2EC4B6; --coral:#FF6B6B; --violet:#8D8DF2; --blue:#5B8DEF;
+  --card:#22325C; --card-hi:#2C3F72; --line:rgba(255,255,255,.15);
+  --dark:#1A2342; --cream:#F6F1E4;
+}
+*{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+html,body{min-height:100%;}
+body{font-family:'Heebo',Arial,sans-serif; color:var(--ink);
+  background:radial-gradient(1200px 700px at 75% -10%, var(--bg-top) 0%, var(--bg2) 45%, var(--bg1) 100%);
+  min-height:100vh; -webkit-font-smoothing:antialiased;}
+.screen{display:none; min-height:100vh; padding:22px 18px 34px; flex-direction:column; position:relative; z-index:2;}
+.screen.active{display:flex;}
+.wrap{max-width:980px; width:100%; margin:0 auto;}
+.brand{display:flex; align-items:center; gap:12px; justify-content:center; margin-bottom:8px;}
+.dots{display:flex; gap:7px;}
+.dots i{width:12px; height:12px; border-radius:50%;}
+.dots i:nth-child(1){background:var(--coral)} .dots i:nth-child(2){background:var(--gold)}
+.dots i:nth-child(3){background:var(--teal)} .dots i:nth-child(4){background:var(--violet)}
+.brand small{color:var(--dim); font-weight:600; font-size:13px;}
+.conn{position:fixed; top:10px; left:12px; font-size:12px; color:var(--dim); display:flex; align-items:center; gap:6px; z-index:60;}
+.cdot{width:9px;height:9px;border-radius:50%;background:var(--coral);} .cdot.on{background:var(--teal);}
+.muted{color:var(--dim); font-weight:600;}
+
+button{font-family:inherit; cursor:pointer; border:none; border-radius:16px; font-weight:800; font-size:18px; padding:15px 26px; transition:transform .1s, filter .12s;}
+button:active{transform:translateY(2px);}
+.b-green{background:var(--gold); color:#1a2342; box-shadow:0 5px 0 #c9a23e;}
+.b-coral{background:var(--coral); color:#fff; box-shadow:0 5px 0 #cc4f4f;}
+.b-yellow{background:var(--teal); color:#06231f; box-shadow:0 5px 0 #229488;}
+.b-ghost{background:transparent; color:var(--ink); box-shadow:inset 0 0 0 2px var(--dim);}
+.b-sm{font-size:14px; padding:10px 16px;}
+button:disabled{opacity:.4; box-shadow:none; cursor:default; transform:none;}
+input[type=text]{font-family:'Heebo'; font-size:20px; text-align:center; background:rgba(255,255,255,.08); border:2px solid rgba(255,255,255,.22);
+  border-radius:14px; padding:13px 16px; width:min(320px,86vw); outline:none; color:var(--ink);}
+input[type=text]::placeholder{color:#7e89a8;}
+input[type=text]:focus{border-color:var(--gold);}
+
+#home{align-items:center; justify-content:center; text-align:center;}
+#home h1{font-size:clamp(40px,8vw,68px); color:var(--gold); font-weight:900; letter-spacing:-1px; line-height:1.05; text-shadow:0 4px 0 rgba(0,0,0,.22);}
+#home .sub{color:var(--dim); font-size:17px; max-width:480px; margin:14px auto 30px; line-height:1.5;}
+.home-choice{display:flex; gap:16px; flex-wrap:wrap; justify-content:center;}
+.home-choice button{min-width:230px;}
+.host-hint{margin-top:22px; font-size:13px; color:var(--dim);}
+.host-hint code{background:rgba(255,255,255,.1); padding:2px 7px; border-radius:6px; color:var(--gold); direction:ltr; display:inline-block;}
+
+#lobby{align-items:center; text-align:center; justify-content:center;}
+.code{font-size:clamp(56px,12vw,112px); color:var(--gold); font-weight:900; letter-spacing:.1em; line-height:1; margin:6px 0;}
+.lobby-grid{display:flex; gap:40px; align-items:center; justify-content:center; flex-wrap:wrap; margin:14px 0 18px;}
+.qrbox{background:#fff; padding:12px; border-radius:18px; box-shadow:0 8px 22px rgba(0,0,0,.4);}
+.qrbox img{display:block; width:190px; height:190px;}
+.joinurl{direction:ltr; font-size:13px; color:var(--dim); margin-top:8px; word-break:break-all; max-width:300px;}
+.players{display:flex; flex-wrap:wrap; gap:9px; justify-content:center; max-width:740px; min-height:44px; margin:8px auto 20px;}
+.chip{background:var(--card); border:1px solid var(--line); border-radius:999px; padding:8px 16px; font-weight:700; font-size:15px; color:var(--ink); animation:pop .35s cubic-bezier(.2,.9,.3,1.4) both;}
+@keyframes pop{from{opacity:0; transform:scale(.85)}to{opacity:1; transform:none}}
+
+.qhead{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:4px;}
+.qcount{color:var(--gold); font-weight:800; font-size:15px;}
+.timer{font-weight:900; font-size:22px; color:var(--ink); display:flex; align-items:center; gap:8px;}
+.tbar{height:8px; background:rgba(255,255,255,.1); border-radius:999px; overflow:hidden; margin:6px 0 4px;}
+.tbar > i{display:block; height:100%; background:linear-gradient(90deg,var(--teal),var(--gold)); width:100%; transition:width .15s linear;}
+.tbar.low > i{background:var(--coral);}
+.qtext{font-size:clamp(26px,4.6vw,46px); color:var(--ink); font-weight:900; text-align:center; line-height:1.18; margin:14px 0 22px;}
+.opts{display:grid; grid-template-columns:1fr 1fr; gap:16px; max-width:760px; margin:0 auto; width:100%;}
+.opt{border-radius:20px; padding:26px 18px; text-align:center; font-size:clamp(22px,4vw,34px); font-weight:900;
+  color:#fff; cursor:pointer; box-shadow:0 7px 0 rgba(0,0,0,.35); transition:transform .1s, filter .12s; border:none; font-family:inherit;}
+.opt:active{transform:translateY(3px);}
+.opt.A{background:var(--blue); box-shadow:0 7px 0 #3f6cc0;}
+.opt.B{background:var(--coral); box-shadow:0 7px 0 #cc4f4f;}
+.opt .k{display:block; font-size:14px; opacity:.9; font-weight:700; margin-bottom:4px;}
+.opt:disabled{cursor:default;}
+.answered-info{text-align:center; margin-top:20px; color:var(--gold); font-weight:800; font-size:20px;}
+.hostctl{display:flex; gap:12px; justify-content:center; margin-top:24px; flex-wrap:wrap;}
+
+.badge{display:inline-block; padding:7px 18px; border-radius:999px; font-weight:800; font-size:16px; margin-bottom:14px;}
+.badge.fact{background:rgba(46,196,182,.16); color:var(--teal); box-shadow:inset 0 0 0 1px rgba(46,196,182,.4);}
+.badge.conv{background:rgba(255,209,102,.16); color:var(--gold); box-shadow:inset 0 0 0 1px rgba(255,209,102,.4);}
+.bars{max-width:640px; margin:8px auto 18px; width:100%;}
+.bar{display:flex; align-items:center; gap:12px; margin:10px 0;}
+.bar .lbl{width:96px; text-align:left; font-weight:800; font-size:18px; flex-shrink:0; color:var(--ink);}
+.bar .track{flex:1; background:rgba(255,255,255,.08); border-radius:999px; height:38px; overflow:hidden; position:relative;}
+.bar .fill{display:block; height:100%; border-radius:999px; transition:width .7s cubic-bezier(.2,.8,.2,1); min-width:2px;}
+.bar.A .fill{background:var(--blue);} .bar.B .fill{background:var(--coral);}
+.bar.win .fill{background:var(--teal)!important;}
+.bar .pct{position:absolute; inset:0; display:flex; align-items:center; padding:0 14px; color:#fff; font-weight:800; font-size:16px; text-shadow:0 1px 3px rgba(0,0,0,.5);}
+.bar .mark{width:30px; text-align:center; font-size:22px; flex-shrink:0;}
+.explain{max-width:680px; margin:6px auto 0; background:var(--cream); border:2px solid #d8cfb4; border-radius:18px;
+  padding:20px 22px; font-size:clamp(16px,2.4vw,20px); line-height:1.6; color:#1b2436; box-shadow:0 10px 30px rgba(0,0,0,.4); text-align:right;}
+.explain b{color:#0f2a52; font-weight:800;}
+
+.pfb{align-items:center; justify-content:center; text-align:center;}
+.bigicon{font-size:84px; line-height:1; margin-bottom:6px;}
+.pfb h2{font-size:clamp(30px,7vw,46px); font-weight:900; line-height:1.1; color:var(--ink);}
+.pfb .pts{font-size:clamp(22px,5vw,30px); font-weight:900; color:var(--gold); margin-top:6px;}
+.pfb .streak{font-size:20px; font-weight:800; color:var(--coral); margin-top:2px;}
+.pfb .ans{font-size:19px; color:var(--dim); font-weight:700; margin-top:8px;}
+.pfb .ex2{max-width:480px; margin:16px auto 0; background:var(--cream); border:2px solid #d8cfb4; border-radius:16px;
+  padding:16px 18px; font-size:15px; line-height:1.55; color:#1b2436; text-align:right;}
+.pfb .ex2 b{color:#0f2a52; font-weight:800;}
+.center{align-items:center; justify-content:center; text-align:center;}
+.center h2{font-size:clamp(26px,5vw,38px); color:var(--gold); font-weight:900; margin-bottom:8px;}
+
+#brk{align-items:center; justify-content:center; text-align:center;}
+.brkcard{max-width:680px; background:var(--card-hi); color:var(--ink); border:1px solid var(--line); border-radius:26px; padding:40px 34px; box-shadow:0 18px 50px rgba(0,0,0,.5);}
+.brkcard .bi{font-size:72px; line-height:1;}
+.brkcard h2{font-size:clamp(26px,5vw,40px); font-weight:900; margin:10px 0 14px; color:var(--gold);}
+.brkcard p{font-size:clamp(17px,2.8vw,22px); line-height:1.6; opacity:.95;}
+
+#board{align-items:center; justify-content:center;}
+.lb{max-width:560px; width:100%; margin:0 auto;}
+.lbrow{display:flex; align-items:center; gap:14px; background:var(--card); border:1px solid var(--line); border-radius:16px;
+  padding:14px 18px; margin:10px 0; box-shadow:0 6px 16px rgba(0,0,0,.3); animation:slidein .4s cubic-bezier(.2,.9,.3,1.3) both;}
+.lbrow .rk{font-size:26px; font-weight:900; width:48px; text-align:center; flex-shrink:0;}
+.lbrow .nm{flex:1; font-weight:800; font-size:20px; color:var(--ink);}
+.lbrow .sc{font-weight:900; font-size:22px; color:var(--gold);}
+.lbrow.r1{background:linear-gradient(90deg,rgba(255,209,102,.22),var(--card)); border-color:rgba(255,209,102,.6);}
+.lbrow.r2{background:linear-gradient(90deg,rgba(200,210,230,.18),var(--card)); border-color:rgba(200,210,230,.5);}
+.lbrow.r3{background:linear-gradient(90deg,rgba(205,140,90,.2),var(--card)); border-color:rgba(205,140,90,.55);}
+@keyframes slidein{from{opacity:0; transform:translateY(14px)}to{opacity:1; transform:none}}
+
+.stats-list{max-width:760px; margin:14px auto 22px; width:100%;}
+.srow{display:flex; align-items:center; gap:12px; background:var(--card); border:1px solid var(--line); border-radius:14px;
+  padding:12px 16px; margin:9px 0; box-shadow:0 4px 12px rgba(0,0,0,.25);}
+.srow .qt{flex:1; font-weight:700; font-size:16px; color:var(--ink);}
+.srow .mini{width:160px; flex-shrink:0; display:flex; flex-direction:column; gap:4px;}
+.srow .mtrack{height:14px; border-radius:999px; background:rgba(255,255,255,.08); overflow:hidden; display:flex;}
+.srow .mtrack .ma{background:var(--blue);} .srow .mtrack .mb{background:var(--coral);}
+.srow .res{font-size:13px; font-weight:700; color:var(--dim); text-align:left;}
+.srow .res.ok{color:var(--teal);}
+.srow .tag{font-size:11px; font-weight:800; padding:3px 9px; border-radius:999px; flex-shrink:0;}
+.srow .tag.fact{background:rgba(46,196,182,.16); color:var(--teal);} .srow .tag.conv{background:rgba(255,209,102,.16); color:var(--gold);}
+.message{max-width:720px; margin:6px auto 0; background:var(--card-hi); color:var(--ink); border:1px solid rgba(255,209,102,.4); border-radius:22px; padding:28px 28px; line-height:1.6; box-shadow:0 14px 44px rgba(0,0,0,.45);}
+.message h2{font-size:clamp(24px,4vw,32px); font-weight:900; margin-bottom:12px; color:var(--gold);}
+.message p{font-size:clamp(16px,2.6vw,20px); opacity:.96;}
+.message .punch{margin-top:16px; font-weight:800; font-size:clamp(18px,3vw,23px); border-top:1px solid rgba(255,255,255,.2); padding-top:16px; color:var(--gold);}
+
+.confetti-piece{position:fixed; top:-24px; font-size:22px; z-index:80; pointer-events:none; animation:fall linear forwards;}
+@keyframes fall{to{transform:translateY(108vh) rotate(540deg); opacity:.9;}}
+#fw{position:fixed; inset:0; z-index:90; display:none; align-items:center; justify-content:center; pointer-events:none;}
+#fw.on{display:flex;}
+.fwtext{background:rgba(27,42,77,.96); border:1px solid rgba(255,209,102,.5); color:var(--gold); border-radius:22px; padding:22px 34px; font-size:clamp(24px,4.5vw,40px);
+  font-weight:900; text-align:center; box-shadow:0 16px 50px rgba(0,0,0,.6); animation:pop .35s cubic-bezier(.2,.9,.3,1.5) both;}
+.fwtext small{display:block; font-size:clamp(16px,2.4vw,22px); font-weight:600; opacity:.92; margin-top:6px; color:var(--ink);}
+
+@media(max-width:560px){ .opts{grid-template-columns:1fr 1fr;} .srow .mini{width:118px;} }
+</style>
+</head>
+<body>
+
+<div class="conn"><span class="cdot" id="conn-dot"></span><span id="conn-txt">לא מחובר</span></div>
+<div id="fw"><div class="fwtext" id="fw-text"></div></div>
+
+<!-- HOME -->
+<section class="screen active" id="home">
+  <div class="wrap" style="margin:auto; text-align:center;">
+    <div class="brand"><div class="dots"><i></i><i></i><i></i><i></i></div></div>
+    <h1>באיזו מגירה?</h1>
+    <p class="sub">שאלה עולה על הלוח, מצביעים בטלפון מהר. חלק מהשאלות יש להן תשובה נכונה — וחלק לא. מהירים מרוויחים יותר, ורצף נכון שווה בונוס 🔥</p>
+    <div class="home-choice">
+      <button class="b-green" id="btnHost" onclick="startHost()">🖥️ אני המורה (לוח)</button>
+      <button class="b-coral" id="btnJoin" onclick="goJoin()">📱 אני תלמיד</button>
+    </div>
+    <p class="host-hint" id="host-note">המורה לוחץ „אני המורה". התלמידים נכנסים דרך הקישור שהמורה משתף.</p>
+  </div>
+</section>
+
+<!-- LOBBY -->
+<section class="screen" id="lobby">
+  <div class="wrap">
+    <div class="brand"><div class="dots"><i></i><i></i><i></i><i></i></div><small>בעיניים פקוחות · שיעור פתיחה</small></div>
+    <p class="muted" style="text-align:center;">היכנסו לכתובת והקלידו את הקוד, או סרקו את ה-QR:</p>
+    <div class="code" id="roomcode">----</div>
+    <div class="lobby-grid">
+      <div class="qrbox"><img id="qr" alt="QR"></div>
+      <div>
+        <div class="muted" style="font-size:15px;">קוד החדר</div>
+        <div style="font-size:34px; font-weight:900; color:var(--head); letter-spacing:.1em;" id="roomcode2">----</div>
+        <div class="joinurl" id="joinurl"></div>
+      </div>
+    </div>
+    <div class="players" id="players"><span class="muted">ממתינים למצטרפים…</span></div>
+    <div style="text-align:center;"><button class="b-yellow" id="startBtn" onclick="hostNext()" disabled>נתחיל! ←</button></div>
+  </div>
+</section>
+
+<!-- HOST QUESTION -->
+<section class="screen" id="hq">
+  <div class="wrap">
+    <div class="qhead"><span class="qcount" id="hq-count"></span><span class="timer" id="hq-timer">⏱️ 20</span></div>
+    <div class="tbar" id="hq-tbar"><i></i></div>
+    <div class="qtext" id="hq-text"></div>
+    <div class="opts">
+      <div class="opt A"><span class="k">כחול</span><span id="hq-a"></span></div>
+      <div class="opt B"><span class="k">אדום</span><span id="hq-b"></span></div>
+    </div>
+    <div class="answered-info" id="hq-answered">ענו: 0</div>
+    <div class="hostctl">
+      <button class="b-green" onclick="hostReveal()">חשוף תשובה ←</button>
+      <button class="b-ghost b-sm" onclick="hostFinish()">סיים ←</button>
+    </div>
+  </div>
+</section>
+
+<!-- HOST REVEAL -->
+<section class="screen" id="hr">
+  <div class="wrap" style="text-align:center;">
+    <div class="qhead" style="justify-content:center;"><span class="qcount" id="hr-count"></span></div>
+    <div class="qtext" id="hr-text" style="margin:8px 0 10px;"></div>
+    <div id="hr-badge"></div>
+    <div class="bars" id="hr-bars"></div>
+    <div class="explain" id="hr-ex"></div>
+    <div class="hostctl">
+      <button class="b-green" id="hr-next" onclick="hostNext()">המשך ←</button>
+      <button class="b-ghost b-sm" onclick="hostFinish()">סיים ←</button>
+    </div>
+  </div>
+</section>
+
+<!-- HOST BREAK -->
+<section class="screen" id="brk">
+  <div class="wrap">
+    <div class="brkcard">
+      <div class="bi" id="brk-icon">💡</div>
+      <h2 id="brk-title"></h2>
+      <p id="brk-text"></p>
+    </div>
+    <div class="hostctl"><button class="b-yellow" onclick="hostNext()">המשך ←</button></div>
+  </div>
+</section>
+
+<!-- HOST BOARD -->
+<section class="screen" id="board">
+  <div class="wrap">
+    <h2 style="text-align:center; font-size:clamp(26px,5vw,40px); color:var(--head); font-weight:900; margin-bottom:6px;">🏆 לוח התוצאות</h2>
+    <div class="lb" id="lb"></div>
+    <div class="hostctl"><button class="b-green" onclick="hostNext()">ממשיכים ←</button></div>
+  </div>
+</section>
+
+<!-- HOST STATS -->
+<section class="screen" id="hs">
+  <div class="wrap">
+    <div class="brand"><div class="dots"><i></i><i></i><i></i><i></i></div></div>
+    <h2 style="text-align:center; font-size:clamp(28px,5vw,40px); color:var(--head); font-weight:900;">אז מה גילינו?</h2>
+    <div class="stats-list" id="stats-list"></div>
+    <div class="message" id="message"></div>
+  </div>
+</section>
+
+<!-- PLAYER JOIN -->
+<section class="screen" id="join">
+  <div class="wrap" style="margin:auto; text-align:center; max-width:420px;">
+    <div class="brand"><div class="dots"><i></i><i></i><i></i><i></i></div></div>
+    <h2 style="font-size:30px; color:var(--head); font-weight:900; margin-bottom:18px;">הצטרפות למשחק</h2>
+    <div style="display:flex; flex-direction:column; gap:14px; align-items:center;">
+      <input type="text" id="in-code" placeholder="קוד החדר" maxlength="6" autocomplete="off" style="letter-spacing:.2em; text-transform:uppercase;">
+      <input type="text" id="in-name" placeholder="השם שלך" maxlength="16" autocomplete="off">
+      <button class="b-coral" onclick="doJoin()" style="width:min(320px,86vw);">הצטרפו ←</button>
+    </div>
+  </div>
+</section>
+
+<!-- PLAYER WAIT -->
+<section class="screen center" id="wait">
+  <div class="wrap" style="max-width:420px;">
+    <div class="bigicon">🪑</div><h2>מחוברים!</h2>
+    <p class="muted" style="margin-top:8px;">חכו שהמורה יתחיל… הסתכלו על הלוח 👀</p>
+  </div>
+</section>
+
+<!-- PLAYER QUESTION -->
+<section class="screen" id="pq">
+  <div class="wrap">
+    <div class="qhead"><span class="qcount" id="pq-count"></span></div>
+    <div class="qtext" id="pq-text" style="font-size:clamp(22px,6vw,30px);"></div>
+    <div class="opts">
+      <button class="opt A" id="pq-a" onclick="answer('a')"></button>
+      <button class="opt B" id="pq-b" onclick="answer('b')"></button>
+    </div>
+  </div>
+</section>
+
+<!-- PLAYER SENT -->
+<section class="screen center" id="psent">
+  <div class="wrap" style="max-width:420px;">
+    <div class="bigicon">✅</div><h2 id="psent-choice">נשלח!</h2>
+    <p class="muted" style="margin-top:8px;">חכו לתשובה על הלוח…</p>
+  </div>
+</section>
+
+<!-- PLAYER FEEDBACK -->
+<section class="screen pfb" id="pfb">
+  <div class="wrap" style="max-width:480px;">
+    <div class="bigicon" id="pfb-icon">🤔</div>
+    <h2 id="pfb-title"></h2>
+    <div class="pts" id="pfb-pts"></div>
+    <div class="streak" id="pfb-streak"></div>
+    <div class="ans" id="pfb-ans"></div>
+    <div class="ex2" id="pfb-ex"></div>
+  </div>
+</section>
+
+<!-- PLAYER BOARD -->
+<section class="screen center" id="pboard">
+  <div class="wrap" style="max-width:420px;">
+    <div class="bigicon">🏆</div><h2>לוח התוצאות</h2>
+    <div class="pts" id="pboard-rank" style="font-size:clamp(24px,6vw,34px); color:var(--head); font-weight:900; margin-top:10px;"></div>
+    <p class="muted" style="margin-top:8px;">הסתכלו על הלוח הגדול 👀</p>
+  </div>
+</section>
+
+<!-- PLAYER END -->
+<section class="screen center" id="pfin">
+  <div class="wrap" style="max-width:460px;">
+    <div class="bigicon">🔍</div><h2 id="pfin-title">סיימנו!</h2>
+    <p style="margin-top:10px; font-size:18px; line-height:1.5; color:#1b2c22;" id="pfin-text"></p>
+  </div>
+</section>
+
+<script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></script>
+<script>
+if (typeof mqtt === 'undefined') {
+  document.write('<script src="https:\/\/cdn.jsdelivr.net\/npm\/mqtt@5.10.1\/dist\/mqtt.min.js"><\/script>');
+}
+</script>
+
+<script>
+/* ===== הגדרות ===== */
+const TIMER = 20; // שניות לכל שאלה (בסיס לניקוד המהירות)
+
+/* בנק השאלות (כל עובדה אומתה ברשת). type:"fact" יש תשובה נכונה · "conv" אין */
+const QUESTIONS = [
+  { q:`פלטיפוס — יונק או ציפור?`, a:"יונק", b:"ציפור", type:"fact", correct:"a",
+    ex:`<b>יונק.</b> מה שקובע אם בעל חיים הוא יונק אינו אופן הלידה שלו, אלא העובדה שהוא מניק את גוריו ובעל פרווה. לפלטיפוס יש את שני המאפיינים האלה, ולכן הוא יונק. העובדה שהוא מטיל ביצים הפכה אותו לחידה מדעית, וכשהדגימות הראשונות הגיעו לאירופה היו מדענים שחשבו שמדובר במתיחה.` },
+  { q:`עגבנייה — פרי או ירק?`, a:"פרי", b:"ירק", type:"fact", correct:"a",
+    ex:`<b>פרי.</b> מבחינה בוטנית עגבנייה היא פרי, משום שהיא מתפתחת מן השחלה של הפרח ומכילה את זרעיו. אף על פי כן, בני אדם מיינו אותה אחרת. בשנת 1893 קבע בית המשפט העליון של ארצות הברית כי לצורכי מס יש להתייחס אליה כאל ירק, ובה בעת הודה כי מבחינה בוטנית מדובר בפרי. כאן נפגשות עובדה מדעית והבחנה אנושית שאינה חופפת לה.` },
+  { q:`בוטן — אגוז או קטנייה?`, a:"אגוז", b:"קטנייה", type:"fact", correct:"b",
+    ex:`<b>קטנייה.</b> הבוטן נמנה עם משפחת הקטניות, כמו האפונה והשעועית, והוא מתפתח בתרמיל מתחת לפני האדמה. אגוזים אמיתיים, כמו אגוז מלך ואגוז לוז, גדלים על עצים בתוך קליפה קשה. הדמיון החיצוני הוא שהוביל לכך שאנו מכנים אותו אגוז.` },
+  { q:`קוקוס — אגוז?`, a:"כן", b:"לא", type:"fact", correct:"b",
+    ex:`<b>לא.</b> הקוקוס אינו אגוז אלא פרי גלעיני, בדומה לתמר ולזית. מבנה כזה כולל שכבה חיצונית סביב גלעין קשה, ובתוך הגלעין נמצא הזרע. הכינוי „אגוז קוקוס" גורם לנו לחשוב שמדובר באגוז, אף שמבחינה ביולוגית זהו פרי.` },
+  { q:`שקד — אגוז?`, a:"כן", b:"לא", type:"fact", correct:"b",
+    ex:`<b>לא.</b> השקד שאנו אוכלים הוא הזרע שבתוך פרי גלעיני, והוא קרוב משפחה של האפרסק והשזיף. גם כאן, הכינוי „אגוז" אינו תואם את הסיווג הבוטני שלו.` },
+  { q:`לווייתן — דג או יונק?`, a:"דג", b:"יונק", type:"fact", correct:"b",
+    ex:`<b>יונק.</b> הלווייתן נושם אוויר, מניק את גוריו ושומר על חום גוף קבוע, וכל אלה מאפיינים של יונק. העובדה שהוא חי במים אינה הופכת אותו לדג. סביבת החיים אינה מה שקובע את שיוכו.` },
+  { q:`עטלף — ציפור או יונק?`, a:"ציפור", b:"יונק", type:"fact", correct:"b",
+    ex:`<b>יונק.</b> לעטלף יש פרווה והוא מניק את גוריו, ואין לו נוצות. היכולת לעוף יוצרת רושם שמדובר בעוף, אך העטלף הוא למעשה היונק היחיד המסוגל לתעופה ממשית.` },
+  { q:`פינגווין — ציפור?`, a:"כן", b:"לא", type:"fact", correct:"a",
+    ex:`<b>כן.</b> הפינגווין הוא ציפור לכל דבר, בעל נוצות ומקור, והוא מטיל ביצים. הוא אינו עף אלא שוחה, וזו הסיבה שרבים מתקשים לשייך אותו לציפורים. ההנחה שכל ציפור חייבת לעוף היא מגירה שאנו ציירנו, ולא חוק טבע.` },
+  { q:`סוס ים — דג?`, a:"כן", b:"לא", type:"fact", correct:"a",
+    ex:`<b>כן.</b> סוס הים הוא דג אמיתי, על אף צורתו יוצאת הדופן. תכונה מפתיעה שלו היא שדווקא הזכר נושא את הביצים בכיס מיוחד שבגופו ומוליד מתוכו את הצאצאים.` },
+  { q:`קואלה — דוב?`, a:"כן", b:"לא", type:"fact", correct:"b",
+    ex:`<b>לא.</b> הקואלה אינו דוב אלא חיית כיס, קרוב משפחה של הקנגורו. הכינוי „דוב קואלה" נולד בשל הדמיון החיצוני, אך דמיון חיצוני אינו מעיד על קרבה ביולוגית.` },
+  { q:`כוכב ים — דג?`, a:"כן", b:"לא", type:"fact", correct:"b",
+    ex:`<b>לא.</b> כוכב הים שייך לקבוצת קווצי העור, ולא לדגים. אין לו עמוד שדרה, אין לו סנפירים ואין לו זימים. הצורה הימית יוצרת בלבול, אך מבחינה ביולוגית מדובר בקבוצה אחרת לגמרי.` },
+  { q:`מדוזה — דג?`, a:"כן", b:"לא", type:"fact", correct:"b",
+    ex:`<b>לא.</b> המדוזה אינה דג. אין לה שלד, אין לה לב, וכ-95 אחוז מגופה מורכבים ממים. החיים במים אינם הופכים אותה לדג, בדיוק כפי שאינם הופכים את הלווייתן לדג.` },
+  { q:`קורנפלקס בחלב — מרק?`, a:"כן", b:"לא", type:"conv", correct:null,
+    ex:`<b>אין כאן תשובה נכונה.</b> „מרק" הוא מושג שבני אדם הגדירו, וגבולותיו מטושטשים. יש כאן נוזל, חתיכות, קערה וכף, ובכל זאת רובנו לא נכנה זאת מרק. כאשר אין הגדרה מדויקת, אנשים שונים יכולים להגיע לתשובות שונות — וכולן עשויות להיות סבירות.` },
+  { q:`נקניקייה בלחמנייה — כריך?`, a:"כן", b:"לא", type:"conv", correct:null,
+    ex:`<b>אין כאן תשובה נכונה.</b> זו שאלה של הגדרה ולא של עובדה. מעניין לציין כי במדינת ניו יורק מוגדרת נקניקייה בלחמנייה ככריך לצורכי מס. כאן ההכרעה נתונה בידי המוסכמה, ולעיתים אף בידי החוק.` },
+  { q:`בוריטו — כריך?`, a:"כן", b:"לא", type:"conv", correct:null,
+    ex:`<b>אין כאן תשובה נכונה.</b> ובכל זאת, בשנת 2006 הכריע בית משפט בארצות הברית כי בוריטו אינו כריך, במסגרת סכסוך עסקי בין שתי רשתות מזון. העובדה שאנשים מגיעים לבית המשפט בשאלה כזו מלמדת כמה משמעותית יכולה להיות מגירה.` },
+  { q:`פלאפל בפיתה — כריך?`, a:"כן", b:"לא", type:"conv", correct:null,
+    ex:`<b>אין כאן תשובה נכונה.</b> התשובה תלויה כולה באופן שבו מגדירים „כריך". האם נדרשות שתי פרוסות לחם, או שמא די בכיס או בעטיפה. כל אחד מציב את הגבול במקום אחר, ולכן אין כאן הכרעה אחת נכונה.` },
+  { q:`פיצה — „טוסט"?`, a:"כן", b:"לא", type:"conv", correct:null,
+    ex:`<b>אין כאן תשובה נכונה.</b> קיימת שיטת מיון מוכרת ברשת המכונה „כלל הקובייה", המסווגת מאכלים לפי מיקום הפחמימה, ולפיה פיצה נחשבת לטוסט. זוהי שיטה אחת מני רבות, ואף אחת מהן אינה נכונה יותר מן האחרות.` },
+];
+
+/* כרטיסי שבירה באמצע (עובדות אמת, שוברים את הקצב) */
+const BREAKS = {
+  platy:{ icon:"🦫", title:`רגע — עובדה מטריפה`, text:`כשהפלטיפוס הגיע לאנגליה ב-1799, מדענים היו בטוחים שזו מתיחה: שמישהו תפר מקור של ברווז לגוף של חיה. הם אפילו חיפשו את התפרים. המציאות פשוט לא נכנסה למגירות שלהם.` },
+  court:{ icon:"⚖️", title:`הקרב על המגירה`, text:`שלוש פעמים בני אדם הגיעו לבית משפט בגלל „באיזו מגירה?": העגבנייה (1893), הנקניקייה, והבוריטו (2006). אנשים באמת רבים על זה — עם עורכי דין. כי המגירה שווה כסף.` },
+};
+
+/* רצף המשחק: q=שאלה, board=לוח תוצאות, break=כרטיס שבירה. מערבב עובדה/קונבנציה. */
+const SEQ = [
+  {t:'q',i:0},{t:'q',i:12},{t:'q',i:1},{t:'q',i:13},{t:'q',i:2},
+  {t:'board'}, {t:'break',k:'platy'},
+  {t:'q',i:7},{t:'q',i:14},{t:'q',i:9},{t:'q',i:5},{t:'q',i:15},
+  {t:'board'}, {t:'break',k:'court'},
+  {t:'q',i:3},{t:'q',i:8},{t:'q',i:16},{t:'q',i:6},{t:'q',i:10},{t:'q',i:4},{t:'q',i:11},
+];
+
+/* ===== MQTT (אותה תבנית מוכחת) ===== */
+const BROKERS = ["wss://broker.emqx.io:8084/mqtt", "wss://broker.hivemq.com:8884/mqtt"];
+const NS = "bep-migirot-2026";
+let client=null, topic=null, myId=Math.random().toString(36).slice(2,10), role=null;
+function setConn(on){ document.getElementById('conn-dot').classList.toggle('on',on); document.getElementById('conn-txt').textContent=on?'מחובר':'לא מחובר'; }
+function connect(room, onReady){
+  topic = NS + "/" + room; let i=0;
+  (function tryBroker(){
+    if(i>=BROKERS.length){ alert('לא הצלחנו להתחבר לשרת המשחק. בדקו אינטרנט ונסו שוב.'); return; }
+    const url=BROKERS[i++];
+    const c=mqtt.connect(url,{clientId:'c_'+myId+'_'+Math.random().toString(36).slice(2,6), clean:true, connectTimeout:6000, reconnectPeriod:2000});
+    let opened=false;
+    c.on('connect',()=>{ if(!opened){opened=true; client=c; c.subscribe(topic,{qos:1},()=>{ setConn(true); onReady&&onReady(); onReady=null; });} else setConn(true); });
+    c.on('close',()=>setConn(false));
+    c.on('error',()=>{ if(!opened){ c.end(true); tryBroker(); } });
+    c.on('message',(t,payload)=>{ let m; try{m=JSON.parse(payload.toString());}catch(e){return;} if(m.from===myId)return;
+      if(m.t==='host_claim'){ hostExists=true; lockTeacherBtn(); return; }
+      if(m.to&&m.to!==myId)return;
+      if(role==='host')hostOnMessage(m); else if(role==='player')playerOnMessage(m); });
+  })();
+}
+function send(obj, retain){ obj.from=myId; if(client) client.publish(topic, JSON.stringify(obj), {qos:1, retain:!!retain}); }
+let hostExists=false;
+function lockTeacherBtn(){ const b=document.getElementById('btnHost'); if(b && !b.disabled){ b.disabled=true; b.textContent='🔒 כבר יש מורה בחדר'; } const n=document.getElementById('host-note'); if(n) n.textContent='יש כבר מורה בחדר הזה — היכנסו כתלמידים.'; }
+function probeRoom(code){ if(client) return; connect(code); }   // מקשיב; host_claim ננעל גלובלית
+const $ = id => document.getElementById(id);
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); window.scrollTo(0,0); }
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* ===== מצב ===== */
+let seqIdx=-1, qi=-1, curQ=null;
+// host:
+let players={};       // id -> {name, score, streak}
+let answers={};       // id -> {choice, ms}
+let results=[];       // לכל שאלה: {q,type,correct,a,b,total}
+let answeredEver={};
+let timerInt=null, qShownAtHost=0;
+// player:
+let myName='', myAnswer=null, myScore=0, myStreak=0, myFactCount=0, myCorrect=0, qShownAt=0, curOpts={a:'',b:''}, lastMs=0;
+
+/* ---------- HOST ---------- */
+function startHost(){
+  role='host';
+  const room=Math.random().toString(36).slice(2,6).toUpperCase().replace(/[^A-Z0-9]/g,'X');
+  $('roomcode').textContent=room; $('roomcode2').textContent=room;
+  const url=location.origin+location.pathname+'?r='+room;
+  $('joinurl').textContent=url.replace(/^https?:\/\//,'');
+  $('qr').src='https://api.qrserver.com/v1/create-qr-code/?size=380x380&margin=2&data='+encodeURIComponent(url);
+  show('lobby'); connect(room, ()=> send({t:'host_claim'}, true));
+}
+function renderPlayers(){
+  const names=Object.values(players).map(p=>p.name);
+  $('players').innerHTML = names.length? names.map(n=>'<span class="chip">'+escapeHtml(n)+'</span>').join('') : '<span class="muted">ממתינים למצטרפים…</span>';
+  $('startBtn').disabled = names.length===0;
+}
+function hostOnMessage(m){
+  if(m.t==='join'){
+    if(!players[m.id]) players[m.id]={name:m.name||'תלמיד', score:0, streak:0};
+    renderPlayers();
+    if(curQ){ send({t:'q', to:m.id, qi:qi, q:curQ.q, a:curQ.a, b:curQ.b, n:countQ()}); }
+  } else if(m.t==='ans'){
+    if(!curQ || m.qi!==qi) return;
+    answers[m.id]={choice:m.choice, ms:m.ms};
+    answeredEver[m.id]=true;
+    $('hq-answered').textContent='ענו: '+Object.keys(answers).length+(Object.keys(players).length?' מתוך '+Object.keys(players).length:'');
+  }
+}
+function countQ(){ return SEQ.filter(s=>s.t==='q').length; }
+
+function startTimer(){
+  stopTimer();
+  let left=TIMER; qShownAtHost=Date.now();
+  $('hq-timer').textContent='⏱️ '+left;
+  $('hq-tbar').classList.remove('low'); $('hq-tbar').firstElementChild.style.width='100%';
+  timerInt=setInterval(()=>{
+    const elapsed=(Date.now()-qShownAtHost)/1000; left=Math.max(0, TIMER-elapsed);
+    $('hq-timer').textContent='⏱️ '+Math.ceil(left);
+    const pct=Math.max(0,left/TIMER*100); $('hq-tbar').firstElementChild.style.width=pct+'%';
+    if(left<=TIMER*0.34) $('hq-tbar').classList.add('low');
+    if(left<=0){ $('hq-timer').textContent='⏱️ 0'; clearInterval(timerInt); timerInt=null; }
+  },150);
+}
+function stopTimer(){ if(timerInt){ clearInterval(timerInt); timerInt=null; } }
+
+function hostNext(){
+  seqIdx++;
+  if(seqIdx>=SEQ.length){ hostFinish(); return; }
+  const seg=SEQ[seqIdx];
+  if(seg.t==='q'){ showQuestion(seg.i); }
+  else if(seg.t==='board'){ showBoard(); }
+  else if(seg.t==='break'){ showBreak(seg.k); }
+}
+function showQuestion(idx){
+  qi=idx; curQ=QUESTIONS[idx]; answers={};
+  const num = SEQ.slice(0,seqIdx+1).filter(s=>s.t==='q').length;
+  $('hq-count').textContent='שאלה '+num+' מתוך '+countQ();
+  $('hq-text').textContent=curQ.q; $('hq-a').textContent=curQ.a; $('hq-b').textContent=curQ.b;
+  $('hq-answered').textContent='ענו: 0';
+  show('hq'); startTimer();
+  send({t:'q', qi:qi, q:curQ.q, a:curQ.a, b:curQ.b, n:countQ()});
+}
+function showBreak(k){
+  stopTimer(); const b=BREAKS[k];
+  $('brk-icon').textContent=b.icon; $('brk-title').textContent=b.title; $('brk-text').textContent=b.text;
+  show('brk'); send({t:'break'});
+}
+function showBoard(){
+  stopTimer();
+  const ranked=Object.entries(players).sort((a,b)=>b[1].score-a[1].score);
+  $('lb').innerHTML = ranked.length? ranked.slice(0,8).map(([id,p],i)=>{
+    const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';
+    return '<div class="lbrow r'+(i+1)+'"><span class="rk">'+medal+'</span><span class="nm">'+escapeHtml(p.name)+'</span><span class="sc">'+p.score+'</span></div>';
+  }).join('') : '<p class="muted" style="text-align:center;">אין עדיין תוצאות.</p>';
+  show('board');
+  if(ranked.length) confetti();
+  // שלח לכל שחקן את הדירוג שלו
+  ranked.forEach(([id,p],i)=> send({t:'board', to:id, rank:i+1, score:p.score, total:ranked.length}));
+  // לשחקנים שאולי לא ענו עדיין:
+  send({t:'board', rank:0, score:0, total:ranked.length});
+}
+function hostReveal(){
+  if(!curQ) return;
+  stopTimer();
+  let a=0,b=0;
+  Object.values(answers).forEach(v=>{ if(v.choice==='a')a++; else if(v.choice==='b')b++; });
+  const total=a+b;
+  results[qi]={q:curQ.q, type:curQ.type, correct:curQ.correct, a:a, b:b, total:total};
+
+  // ניקוד — רק לשאלות עובדה
+  let bestStreakName='', bestStreak=0, fastName='', fastMs=Infinity;
+  if(curQ.type==='fact'){
+    for(const id in players){
+      const p=players[id]; const ans=answers[id];
+      if(ans && ans.choice===curQ.correct){
+        const speed=Math.max(0, 1 - (ans.ms||TIMER*1000)/(TIMER*1000));
+        let pts=Math.round(500 + 500*speed);
+        p.streak=(p.streak||0)+1;
+        if(p.streak>=2) pts+=Math.min((p.streak-1)*50,150);
+        p.score=(p.score||0)+pts;
+        if(p.streak>bestStreak){ bestStreak=p.streak; bestStreakName=p.name; }
+        if((ans.ms||Infinity)<fastMs){ fastMs=ans.ms; fastName=p.name; }
+      } else { p.streak=0; }
+    }
+  }
+
+  $('hr-count').textContent='שאלה '+(SEQ.slice(0,seqIdx+1).filter(s=>s.t==='q').length)+' מתוך '+countQ();
+  $('hr-text').textContent=curQ.q;
+  $('hr-badge').innerHTML = curQ.type==='fact'
+    ? '<span class="badge fact">✓ יש כאן תשובה נכונה</span>'
+    : '<span class="badge conv">🤷 אין תשובה נכונה — הרוב מחליט</span>';
+  $('hr-bars').innerHTML = barHtml('A',curQ.a,a,total,curQ.type==='fact'&&curQ.correct==='a')
+                         + barHtml('B',curQ.b,b,total,curQ.type==='fact'&&curQ.correct==='b');
+  $('hr-ex').innerHTML = curQ.ex;
+  show('hr');
+  send({t:'reveal', qi:qi, type:curQ.type, correct:curQ.correct, a:a, b:b, total:total, ex:curQ.ex, la:curQ.a, lb:curQ.b, timer:TIMER});
+
+  // התפוצצויות לשיאים
+  if(curQ.type==='fact' && bestStreak>=3){ fireworks('🔥 רצף!','‏'+bestStreakName+' ברצף של '+bestStreak+' נכונות'); }
+  else if(curQ.type==='fact' && fastName && fastMs<TIMER*1000*0.35){ fireworks('🚀 מהיר!','‏'+fastName+' ענה ראשון ונכון'); }
+}
+function barHtml(side,label,count,total,win){
+  const pct=total?Math.round(count/total*100):0;
+  return '<div class="bar '+side+(win?' win':'')+'"><span class="lbl">'+escapeHtml(label)+'</span>'
+    +'<span class="track"><span class="fill" style="width:'+pct+'%"></span><span class="pct">'+pct+'% · '+count+'</span></span>'
+    +'<span class="mark">'+(win?'✓':'')+'</span></div>';
+}
+function hostFinish(){
+  stopTimer();
+  const played=results.filter(r=>r);
+  const nPlayers=Math.max(Object.keys(answeredEver).length, Object.keys(players).length);
+  let rows='', splitCount=0, factTotal=0, factWrong=0;
+  played.forEach(r=>{
+    const tot=r.total||0, pa=tot?Math.round(r.a/tot*100):50;
+    if(tot && Math.min(r.a,r.b)/tot>=0.25) splitCount++;
+    let res='', cls='';
+    if(r.type==='fact'&&r.correct){
+      const corr=r.correct==='a'?r.a:r.b; factTotal+=tot; factWrong+=(tot-corr);
+      res=corr+' מתוך '+tot+' צדקו'; cls=(tot&&corr/tot>=0.6)?'ok':'';
+    } else { res='נחלקנו '+pa+'/'+(100-pa); }
+    rows+='<div class="srow"><span class="tag '+r.type+'">'+(r.type==='fact'?'עובדה':'דעה')+'</span>'
+      +'<span class="qt">'+escapeHtml(r.q)+'</span>'
+      +'<span class="mini"><span class="mtrack"><span class="ma" style="width:'+pa+'%"></span><span class="mb" style="width:'+(100-pa)+'%"></span></span>'
+      +'<span class="res '+cls+'">'+res+'</span></span></div>';
+  });
+  $('stats-list').innerHTML = rows || '<p class="muted" style="text-align:center;">לא שוחקו שאלות.</p>';
+  const fwp=factTotal?Math.round(factWrong/factTotal*100):0;
+  $('message').innerHTML =
+    '<h2>ענו כאן '+nPlayers+' תלמידים. וזהו.</h2>'
+    +'<p>חלק מהשאלות בכלל לא היו קשות. ובכל זאת — אפילו בקבוצה כל כך קטנה — '
+    +(splitCount>0?('על <b>'+splitCount+'</b> מהשאלות לא הסכמנו, נחלקנו לכאן ולכאן. '):'')
+    +(fwp>0?('ועל השאלות שיש להן תשובה נכונה, בממוצע <b>'+fwp+'%</b> מכם טעו. '):'')
+    +'לא מצאנו „עמק השווה".</p>'
+    +'<p>לא כל השאלות במשחק הן מאותו סוג. בחלק מהן יש תשובה נכונה שאפשר לבדוק באמצעות המדע והידע הקיים על העולם. באחרות אין תשובה נכונה אחת, משום שהן תלויות בהגדרות ובמוסכמות שבני אדם יצרו. האתגר הוא לזהות מתי אנחנו מגלים משהו על המציאות, ומתי אנחנו בעצם דנים בדרך שבה בחרנו לחלק ולסווג אותה.</p>'
+    +'<p class="punch">לשים משהו במגירה זו לא פעולה אוטומטית — זו בעיה שדורשת מחשבה. אל תיקחו דברים כמובן מאליו: עִצרו ושאלו — מי צייר את המגירה, ולמה?</p>';
+  show('hs'); confetti(); send({t:'end', n:nPlayers});
+}
+
+/* ---------- PLAYER ---------- */
+function goJoin(){ show('join'); }
+function doJoin(){
+  const code=($('in-code').value||'').trim().toUpperCase(); const name=($('in-name').value||'').trim();
+  if(code.length<3){ alert('הקלידו את קוד החדר.'); return; }
+  if(!name){ alert('הקלידו שם.'); return; }
+  myName=name; role='player'; show('wait');
+  if(client){ send({t:'join', id:myId, name:myName}); }
+  else { connect(code, ()=> send({t:'join', id:myId, name:myName})); }
+}
+function playerOnMessage(m){
+  if(m.t==='q'){
+    qi=m.qi; myAnswer=null; curOpts={a:m.a,b:m.b}; qShownAt=Date.now();
+    $('pq-count').textContent='שאלה '+(m.qi+1)+' מתוך '+m.n;
+    $('pq-text').textContent=m.q;
+    $('pq-a').innerHTML='<span class="k">כחול</span>'+escapeHtml(m.a);
+    $('pq-b').innerHTML='<span class="k">אדום</span>'+escapeHtml(m.b);
+    $('pq-a').disabled=false; $('pq-b').disabled=false; show('pq');
+  } else if(m.t==='reveal'){ playerReveal(m); }
+  else if(m.t==='break'){ /* התלמיד פשוט מסתכל על הלוח */ show('wait'); $('wait').querySelector('h2').textContent='רגע…'; }
+  else if(m.t==='board'){
+    if(m.rank>0){ $('pboard-rank').textContent='מקום '+m.rank+' מתוך '+m.total+' · '+m.score+' נק׳'; }
+    else { $('pboard-rank').textContent=myScore+' נק׳'; }
+    show('pboard');
+  }
+  else if(m.t==='end'){
+    $('pfin-text').innerHTML='ענינו '+(m.n||'')+' תלמידים — ועדיין לא הסכמנו על הכול. '
+      +(myFactCount?('בשאלות עם תשובה נכונה צדקת ב-<b>'+myCorrect+'</b> מתוך <b>'+myFactCount+'</b>, וצברת <b>'+myScore+'</b> נקודות. '):'')
+      +'תראו את הסיכום על הלוח 👀';
+    show('pfin');
+  }
+}
+function answer(ch){
+  if(myAnswer) return;
+  myAnswer=ch; const ms=Date.now()-qShownAt; lastMs=ms;
+  $('pq-a').disabled=true; $('pq-b').disabled=true;
+  $('psent-choice').textContent='בחרת: '+curOpts[ch];
+  send({t:'ans', id:myId, qi:qi, choice:ch, ms:ms});
+  show('psent');
+}
+function playerReveal(m){
+  if(m.type==='fact'){
+    myFactCount++;
+    const right=(myAnswer===m.correct);
+    let pts=0;
+    if(myAnswer && right){
+      myCorrect++;
+      const speed=Math.max(0,1-(lastMs||0)/(m.timer*1000));
+      pts=Math.round(500+500*speed);
+      myStreak++; if(myStreak>=2) pts+=Math.min((myStreak-1)*50,150);
+      myScore+=pts;
+    } else { myStreak=0; }
+    const corrLabel=m.correct==='a'?m.la:m.lb;
+    if(!myAnswer){ $('pfb-icon').textContent='⏱️'; $('pfb-title').textContent='לא הספקת'; $('pfb-pts').textContent=''; }
+    else if(right){ $('pfb-icon').textContent='✅'; $('pfb-title').textContent='צדקת!'; $('pfb-pts').textContent='+'+pts+' נק׳'; }
+    else { $('pfb-icon').textContent='❌'; $('pfb-title').textContent='לא הפעם'; $('pfb-pts').textContent=''; }
+    $('pfb-streak').textContent = (myAnswer&&right&&myStreak>=2)? ('🔥 רצף של '+myStreak) : '';
+    $('pfb-ans').textContent='התשובה: '+corrLabel;
+  } else {
+    $('pfb-icon').textContent='🤷'; $('pfb-title').textContent='אין תשובה נכונה';
+    $('pfb-pts').textContent=''; $('pfb-streak').textContent='';
+    $('pfb-ans').textContent='ככה הכיתה נחלקה — תראו על הלוח';
+  }
+  $('pfb-ex').innerHTML=m.ex; show('pfb');
+}
+
+/* ===== celebrations ===== */
+function confetti(){
+  const em=['🎉','✨','🟢','🟡','🔵','🔴','🎊'];
+  for(let i=0;i<46;i++){
+    const s=document.createElement('div'); s.className='confetti-piece';
+    s.textContent=em[Math.floor(Math.random()*em.length)];
+    s.style.left=Math.random()*100+'vw';
+    s.style.animationDuration=(1.6+Math.random()*1.4)+'s';
+    s.style.animationDelay=(Math.random()*0.5)+'s';
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),3200);
+  }
+}
+function fireworks(big, small){
+  $('fw-text').innerHTML=big+'<small>'+escapeHtml(small)+'</small>';
+  $('fw').classList.add('on'); confetti();
+  setTimeout(()=>$('fw').classList.remove('on'),2600);
+}
+
+/* כניסה: ?r=CODE → תלמיד (כפתור 'מורה' ננעל ע"י נעילת-מצב מהשרת) · ריק → מסך בחירה */
+(function(){ const p=new URLSearchParams(location.search); const r=p.get('r');
+  if(r){ const code=r.toUpperCase();
+    $('in-code').value=code;
+    hostExists=true; lockTeacherBtn();   // הגעה מקישור = קיים מורה → כבה את הכפתור מיד
+    probeRoom(code);                      // התחבר ואשר דרך ההודעה הנעולה (host_claim)
+  }
+})();
+</script>
+</body>
+</html>
