@@ -202,31 +202,166 @@
     <button class="btn" id="rv-btn">שחק שוב — עכשיו כשאתם יודעים 🔄</button>
   </div>
 
+  <!-- ===== מאוחד: שכבת בחירת תפקיד + לוח כיתתי (תבנית שיעור 0) ===== -->
+  <style>
+    #role-home, #board { position:fixed; inset:0; z-index:9000; background:radial-gradient(120% 120% at 50% 0%, #2E7D4F 0%, #14502E 55%, #0E3A21 100%); color:#fff; font-family:Arial,sans-serif; display:none; flex-direction:column; align-items:center; justify-content:center; padding:24px; overflow:auto; direction:rtl; }
+    #role-home.on, #board.on { display:flex; }
+    .ov-brand { display:flex; align-items:center; gap:9px; margin-bottom:14px; opacity:.95; }
+    .ov-brand .dts { display:flex; gap:5px; } .ov-brand .dts i{ width:10px;height:10px;border-radius:50%;display:block; } .ov-brand b{ font-size:17px; }
+    #role-home h1, #board h1 { font-size:clamp(28px,5vw,46px); margin:6px 0; text-align:center; }
+    #role-home h2 { font-size:clamp(15px,2.4vw,22px); color:#E8B923; margin-bottom:30px; text-align:center; font-weight:700; }
+    .ov-btn { font-family:inherit; font-size:21px; font-weight:900; border:none; border-radius:16px; padding:18px 34px; cursor:pointer; margin:9px; box-shadow:0 7px 0 rgba(0,0,0,.3); transition:transform .08s,box-shadow .08s; }
+    .ov-btn:active { transform:translateY(5px); box-shadow:0 2px 0 rgba(0,0,0,.3); }
+    .ov-btn.green { background:#E8B923; color:#14502E; } .ov-btn.coral { background:#E67E22; color:#fff; }
+    .ov-btn[disabled]{ background:#6f8a78; color:#dfeee5; box-shadow:0 7px 0 #51685a; cursor:default; }
+    .ov-hint { color:#BFE0CC; margin-top:16px; text-align:center; max-width:540px; line-height:1.55; font-size:15px; }
+    #join-box { display:none; margin-top:18px; text-align:center; }
+    #join-box.on { display:block; }
+    #join-box input { font-family:Arial; font-size:22px; text-align:center; letter-spacing:.15em; text-transform:uppercase; padding:12px 18px; border-radius:12px; border:2px solid #E8B923; background:#fff; color:#14502E; width:min(220px,70vw); direction:ltr; outline:none; }
+    .bd-conn { display:flex;align-items:center;gap:8px;font-size:14px;color:#BFE0CC;margin-bottom:16px; } .bd-conn .d{width:11px;height:11px;border-radius:50%;background:#c0392b;} .bd-conn .d.on{background:#27ae60;box-shadow:0 0 8px #27ae60;}
+    .bd-grid { display:flex;gap:42px;align-items:center;flex-wrap:wrap;justify-content:center; }
+    .bd-code { font-size:clamp(56px,12vw,116px);color:#E8B923;font-weight:900;letter-spacing:.12em;line-height:1;text-align:center; }
+    .bd-code .lab{font-size:15px;color:#BFE0CC;letter-spacing:0;font-weight:400;margin-bottom:2px;}
+    .bd-qr{background:#fff;padding:14px;border-radius:16px;box-shadow:0 12px 36px rgba(0,0,0,.35);} .bd-qr img{display:block;width:clamp(200px,28vw,270px);height:auto;}
+    .bd-cnt{margin:26px 0 18px;text-align:center;} .bd-cnt .n{font-size:clamp(42px,8vw,76px);font-weight:900;line-height:1;} .bd-cnt .t{color:#BFE0CC;font-size:17px;}
+    #bd-results{display:none;width:100%;max-width:880px;} #bd-results.on{display:block;}
+    #bd-results .rh{text-align:center;color:#BFE0CC;margin-bottom:10px;font-size:15px;}
+    #bd-results table{border-collapse:collapse;width:100%;background:rgba(255,255,255,.04);border-radius:14px;overflow:hidden;}
+    #bd-results th{background:rgba(232,185,35,.16);color:#E8B923;font-size:17px;padding:12px 14px;text-align:right;font-weight:900;}
+    #bd-results td{padding:11px 14px;font-size:19px;border-top:1px solid rgba(255,255,255,.08);} #bd-results tr:nth-child(even){background:rgba(255,255,255,.03);}
+    #bd-results td.nm{font-weight:700;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    #bd-results td.tm{color:#fff;direction:ltr;text-align:right;font-weight:900;font-variant-numeric:tabular-nums;}
+    .bd-bar{display:inline-block;width:150px;height:17px;background:rgba(255,255,255,.12);border-radius:9px;overflow:hidden;vertical-align:middle;margin-left:9px;} .bd-bar span{display:block;height:100%;background:linear-gradient(90deg,#E8B923,#E67E22);}
+    .bd-pk{font-weight:900;color:#E8B923;font-variant-numeric:tabular-nums;}
+    .bd-q{margin:26px auto 6px;max-width:740px;text-align:center;background:rgba(0,0,0,.22);border:1px solid rgba(232,185,35,.35);border-radius:16px;padding:20px 24px;font-size:clamp(17px,2.5vw,22px);line-height:1.5;}
+    .bd-q b{color:#E8B923;}
+    .bd-controls{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;justify-content:center;}
+  </style>
+
+  <div id="role-home">
+    <div class="ov-brand"><span class="dts"><i style="background:#E74C3C"></i><i style="background:#E8B923"></i><i style="background:#27AE60"></i><i style="background:#3498DB"></i><i style="background:#8E44AD"></i></span><b>בעיניים פקוחות</b></div>
+    <h1>מרוץ הדלק</h1>
+    <h2>אותו רכב, עולם אחר</h2>
+    <div>
+      <button class="ov-btn green" id="btnHost">🖥️ אני המורה (לוח)</button>
+      <button class="ov-btn coral" id="btnJoin">📱 אני תלמיד</button>
+      <button class="ov-btn" id="btnSolo" style="background:#3a8a5c;color:#fff;">🚗 שחק לבד</button>
+    </div>
+    <div id="join-box">
+      <input type="text" id="in-code" placeholder="קוד החדר" maxlength="6" autocomplete="off">
+      <button class="ov-btn coral" id="btnJoinGo" style="font-size:18px;padding:13px 24px;">הצטרף</button>
+    </div>
+    <p class="ov-hint" id="home-hint">המורה לוחץ „אני המורה”. התלמידים נכנסים דרך ה-QR שהמורה מקרין (או „אני תלמיד” + קוד החדר).</p>
+  </div>
+
+  <div id="board">
+    <div class="ov-brand"><span class="dts"><i style="background:#E74C3C"></i><i style="background:#E8B923"></i><i style="background:#27AE60"></i><i style="background:#3498DB"></i><i style="background:#8E44AD"></i></span><b>בעיניים פקוחות · לוח כיתתי</b></div>
+    <div class="bd-conn"><span class="d" id="bd-dot"></span><span id="bd-connt">מתחבר…</span></div>
+    <div class="bd-grid">
+      <div class="bd-code"><div class="lab">קוד החדר</div><div id="bd-code">----</div></div>
+      <div class="bd-qr"><img id="bd-qr" alt="QR"></div>
+    </div>
+    <div class="bd-cnt"><div class="n" id="bd-num">0</div><div class="t">תלמידים סיימו</div></div>
+    <button class="ov-btn green" id="bd-reveal" disabled>חשוף תוצאות</button>
+    <div id="bd-results">
+      <div class="rh" id="bd-sortlab">ממוין לפי זמן סיום</div>
+      <table><thead><tr><th>כינוי</th><th>זמן סיום</th><th>שיא מטען <span style="font-weight:400;font-size:12px;">(מתוך 10)</span></th></tr></thead><tbody id="bd-tbody"></tbody></table>
+      <div class="bd-q">מה אתם שמים לב אליו כשמשווים בין <b>שיא המטען</b> לבין <b>זמן הסיום</b>?</div>
+      <div class="bd-controls"><button class="ov-btn coral" id="bd-sort" style="font-size:17px;padding:12px 22px;">מיין לפי שיא מטען</button></div>
+    </div>
+  </div>
+
   <script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></script>
   <script>if(typeof mqtt==='undefined'){document.write('<script src="https:\/\/cdn.jsdelivr.net\/npm\/mqtt@5.10.1\/dist\/mqtt.min.js"><\/script>');}</script>
   <script>
-  /* ===== לוח כיתתי: חיבור חדר ושליחת תוצאה אחת בסיום (אופציונלי; פעיל רק עם ?room=) ===== */
+  /* ===== מאוחד: בחירת תפקיד + לוח מורה + תלמיד (תבנית שיעור 0) ===== */
   (function(){
-    var as2=new URLSearchParams(location.search);
-    var ROOM=(as2.get('room')||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
-    if(!ROOM) return;                         // אין חדר → משחק יחיד רגיל, אפס תלות ברשת
     var NS="bep-delek-2026";
     var BROKERS=["wss://broker.emqx.io:8084/mqtt","wss://broker.hivemq.com:8884/mqtt"];
     var myId=Math.random().toString(36).slice(2,10);
+    var $=function(id){return document.getElementById(id);};
+    var ROOM=null, role=null, client=null;
     window.__mqc=null;
-    var w=document.getElementById('nick-wrap'); if(w) w.style.display='block';
-    (function tryB(i){
-      if(typeof mqtt==='undefined'||i>=BROKERS.length) return;
-      var c=mqtt.connect(BROKERS[i],{clientId:'g_'+myId+'_'+Math.random().toString(36).slice(2,6),clean:true,connectTimeout:6000,reconnectPeriod:2000});
-      var opened=false;
-      c.on('connect',function(){ if(!opened){opened=true; window.__mqc=c;} });
-      c.on('error',function(){ if(!opened){ c.end(true); tryB(i+1); } });
-    })(0);
+
+    var as2=new URLSearchParams(location.search);
+    var urlRoom=(as2.get('room')||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+
+    function showOv(id){ $('role-home').classList.toggle('on', id==='role-home'); $('board').classList.toggle('on', id==='board'); }
+    function setBdConn(on){ var d=$('bd-dot'), t=$('bd-connt'); if(d) d.classList.toggle('on',on); if(t) t.textContent=on?'מחובר':'מנותק'; }
+    function lockHost(){ var b=$('btnHost'); if(b && !b.disabled){ b.disabled=true; b.textContent='🔒 כבר יש מורה בחדר'; } var h=$('home-hint'); if(h) h.textContent='יש כבר מורה בחדר הזה — היכנסו כתלמידים.'; }
+    function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+    function fmt(s){ if(!isFinite(s)) return '—'; var m=Math.floor(s/60), t=s-m*60; return m+":"+(t<10?"0":"")+t.toFixed(1); }
+
+    /* --- חיבור MQTT (מורה מאזין; תלמיד רק שולח) --- */
+    function connect(room, onReady){
+      var topic=NS+"/"+room, i=0;
+      (function tryB(){
+        if(typeof mqtt==='undefined') return;
+        if(i>=BROKERS.length){ if(role==='host') alert('לא הצלחנו להתחבר לשרת. בדקו אינטרנט ונסו לרענן.'); return; }
+        var c=mqtt.connect(BROKERS[i++],{clientId:'u_'+myId+'_'+Math.random().toString(36).slice(2,6),clean:true,connectTimeout:6000,reconnectPeriod:2000});
+        var opened=false;
+        c.on('connect',function(){
+          if(!opened){ opened=true; client=c; window.__mqc=c;
+            if(role==='host'){ c.subscribe(topic+"/#",{qos:1},function(){ setBdConn(true); onReady&&onReady(); onReady=null; }); }
+            else { onReady&&onReady(); onReady=null; }
+          } else if(role==='host') setBdConn(true);
+        });
+        c.on('close',function(){ if(role==='host') setBdConn(false); });
+        c.on('error',function(){ if(!opened){ c.end(true); tryB(); } });
+        c.on('message',function(t,payload){ var m; try{m=JSON.parse(payload.toString());}catch(e){return;} if(!m||m.from===myId) return;
+          if(m.t==='host_claim'){ lockHost(); return; }
+          if(role==='host' && m.t==='result' && m.name){ onResult(m); }
+        });
+      })();
+    }
+
+    /* --- מורה (לוח) --- */
+    var results=new Map(), revealed=false, sortBy='time';
+    function onResult(m){ results.set(String(m.name), {name:String(m.name).slice(0,16), time:+m.time, peak:Math.max(0,Math.min(10,+m.peak||0))}); var n=results.size; $('bd-num').textContent=n; $('bd-reveal').disabled=n===0; if(revealed) renderBd(); }
+    function renderBd(){
+      var arr=[...results.values()];
+      arr.sort(function(a,b){ return sortBy==='time' ? (a.time-b.time) : ((a.peak-b.peak)||(a.time-b.time)); });
+      $('bd-tbody').innerHTML = arr.length ? arr.map(function(r){
+        return '<tr><td class="nm">'+esc(r.name)+'</td><td class="tm">'+fmt(r.time)+'</td><td><span class="bd-bar"><span style="width:'+(r.peak/10*100)+'%"></span></span><span class="bd-pk">'+r.peak+'</span></td></tr>';
+      }).join('') : '<tr><td colspan="3" style="text-align:center;color:#BFE0CC;padding:30px;">עדיין אין תוצאות…</td></tr>';
+      $('bd-sortlab').textContent = sortBy==='time' ? 'ממוין לפי זמן סיום' : 'ממוין לפי שיא מטען';
+      $('bd-sort').textContent = sortBy==='time' ? 'מיין לפי שיא מטען' : 'מיין לפי זמן';
+    }
+    function startHost(){
+      role='host';
+      ROOM=Math.random().toString(36).slice(2,6).toUpperCase().replace(/[^A-Z0-9]/g,'X');
+      $('bd-code').textContent=ROOM;
+      var u=location.origin+location.pathname+'?room='+ROOM;
+      $('bd-qr').src='https://api.qrserver.com/v1/create-qr-code/?size=380x380&margin=2&data='+encodeURIComponent(u);
+      showOv('board');
+      connect(ROOM, function(){ if(client) client.publish(NS+"/"+ROOM, JSON.stringify({from:myId,t:'host_claim'}), {qos:1,retain:true}); });
+    }
+
+    /* --- תלמיד --- */
+    function startPlayer(room){
+      role='player'; ROOM=room;
+      showOv(null);                              /* הסתר שכבות → המשחק מוצג */
+      var w=$('nick-wrap'); if(w) w.style.display='block';
+      connect(ROOM);                              /* מתחבר כדי לשלוח תוצאה בסיום */
+    }
     window.__pubResult=function(car){
-      if(!window.__mqc||typeof mqtt==='undefined'||!car) return;
-      var nm=((document.getElementById('nick')||{}).value||'').trim().slice(0,16)||'תלמיד';
-      try{ window.__mqc.publish(NS+"/"+ROOM+"/"+myId, JSON.stringify({t:'result',name:nm,time:car.finishTime,peak:car.boxesPeak}), {qos:1,retain:true}); }catch(e){}
+      if(role!=='player' || !window.__mqc || typeof mqtt==='undefined' || !car) return;
+      var nm=(($('nick')||{}).value||'').trim().slice(0,16)||'תלמיד';
+      try{ window.__mqc.publish(NS+"/"+ROOM+"/"+myId, JSON.stringify({from:myId,t:'result',name:nm,time:car.finishTime,peak:car.boxesPeak}), {qos:1,retain:true}); }catch(e){}
     };
+
+    /* --- אירועים --- */
+    $('btnHost').onclick=startHost;
+    $('btnJoin').onclick=function(){ $('join-box').classList.add('on'); $('in-code').focus(); };
+    $('btnSolo').onclick=function(){ showOv(null); };   /* שחק לבד: ללא חדר, ללא שליחה */
+    $('btnJoinGo').onclick=function(){ var c=($('in-code').value||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,''); if(c.length<3){ alert('הקלידו את קוד החדר.'); return; } startPlayer(c); };
+    $('in-code').addEventListener('keydown',function(e){ if(e.key==='Enter') $('btnJoinGo').click(); });
+    $('bd-reveal').onclick=function(){ revealed=true; $('bd-results').classList.add('on'); renderBd(); };
+    $('bd-sort').onclick=function(){ sortBy = sortBy==='time' ? 'peak' : 'time'; renderBd(); };
+
+    /* --- כניסה --- */
+    if(urlRoom){ startPlayer(urlRoom); }           /* הגעה דרך QR/קישור → תלמיד ישירות */
+    else { showOv('role-home'); }                  /* כתובת רגילה → מסך בחירת תפקיד */
   })();
   </script>
   <script type="module">
