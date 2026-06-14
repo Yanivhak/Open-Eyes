@@ -283,9 +283,120 @@
     </div>
   </div>
 
-  <script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></script>
-  <script>if(typeof mqtt==='undefined'){document.write('<script src="https:\/\/cdn.jsdelivr.net\/npm\/mqtt@5.10.1\/dist\/mqtt.min.js"><\/script>');}</script>
-  <script>
+  <!-- Firebase + MQTT-over-Firebase shim (תעבורה שבתי ספר לא חוסמים) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database-compat.js"></script>
+<script>
+/* ===== MQTT-over-Firebase shim =====
+   ממשק תואם-mqtt.js (connect/on/subscribe/publish/end) מעל Firebase Realtime DB.
+   כל חדר עובר דרך "אפיק" יחיד במסד; כל משחק יושב תחת ה-NS שלו (ענף נפרד). */
+(function(){
+  var CFG = {
+    apiKey: "AIzaSyDw3u4OJ36CH8SNJPkTc5GmvJ3VYJuSZ6w",
+    authDomain: "open-eyes-2f7a5.firebaseapp.com",
+    databaseURL: "https://open-eyes-2f7a5-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "open-eyes-2f7a5",
+    storageBucket: "open-eyes-2f7a5.firebasestorage.app",
+    messagingSenderId: "566431639820",
+    appId: "1:566431639820:web:0b382d86e780b61b4ec129"
+  };
+  if(!firebase.apps.length){ firebase.initializeApp(CFG); }
+  var db = firebase.database();
+
+  function enc(t){ return String(t).replace(/[\/.#$\[\]]/g,'_'); }
+  function busFor(topic){ var p=String(topic).split('/'); return p.slice(0,2).join('/'); }
+  function matches(filter, topic){
+    var f=filter.split('/'), t=topic.split('/');
+    for(var i=0;i<f.length;i++){
+      if(f[i]==='#') return true;
+      if(f[i]==='+'){ if(t[i]===undefined) return false; continue; }
+      if(f[i]!==t[i]) return false;
+    }
+    return f.length===t.length;
+  }
+
+  function Client(){
+    var self=this;
+    this._h={connect:[],message:[],close:[],error:[]};
+    this._subs=[]; this._busPath=null; this._busRef=null; this._retRef=null;
+    this._attached=false; this._ended=false; this._wasOn=false;
+    this._connRef=db.ref('.info/connected');
+    this._connCb=function(s){
+      if(self._ended) return;
+      var on=(s.val()===true);
+      if(on && !self._wasOn){ self._wasOn=true; self._emit('connect',{}); }
+      else if(!on && self._wasOn){ self._wasOn=false; self._emit('close'); }
+    };
+    this._connRef.on('value', this._connCb);
+  }
+  Client.prototype._emit=function(ev){
+    var a=Array.prototype.slice.call(arguments,1), hs=this._h[ev]||[];
+    for(var i=0;i<hs.length;i++){ try{ hs[i].apply(null,a); }catch(e){} }
+  };
+  Client.prototype.on=function(ev,cb){ if(this._h[ev]) this._h[ev].push(cb); return this; };
+  Client.prototype._ensureBus=function(topic){
+    if(this._busPath) return;
+    this._busPath=busFor(topic);
+    this._busRef=db.ref(this._busPath+'/__bus');
+    this._retRef=db.ref(this._busPath+'/__ret');
+  };
+  Client.prototype._attach=function(){
+    if(this._attached || !this._busRef) return;
+    this._attached=true;
+    var self=this;
+    self._busRef.limitToLast(1).once('value', function(snap){
+      var lastKey=null; snap.forEach(function(c){ lastKey=c.key; });
+      var q = lastKey ? self._busRef.orderByKey().startAt(lastKey) : self._busRef;
+      q.on('child_added', function(cs){
+        if(lastKey && cs.key===lastKey) return;
+        var m=cs.val(); if(!m || !m.topic) return;
+        self._dispatch(m.topic, m.payload);
+      });
+    });
+  };
+  Client.prototype._dispatch=function(topic, payload){
+    for(var i=0;i<this._subs.length;i++){
+      if(matches(this._subs[i], topic)){ this._emit('message', topic, payload); return; }
+    }
+  };
+  Client.prototype.subscribe=function(filter, opts, cb){
+    if(typeof opts==='function'){ cb=opts; opts={}; }
+    var self=this;
+    this._ensureBus(filter);
+    this._subs.push(filter);
+    this._attach();
+    if(this._retRef){
+      this._retRef.once('value', function(snap){
+        snap.forEach(function(c){
+          var v=c.val();
+          if(v && v.topic && self._subs.indexOf(filter)!==-1 && matches(filter, v.topic)){
+            self._emit('message', v.topic, v.payload);
+          }
+        });
+      });
+    }
+    if(cb) setTimeout(function(){ cb(null, [{topic:filter, qos:(opts&&opts.qos)||0}]); }, 0);
+    return this;
+  };
+  Client.prototype.publish=function(topic, payload, opts){
+    this._ensureBus(topic);
+    var msg={ topic:String(topic), payload:(payload==null?'':String(payload)), ts:Date.now() };
+    try{ this._busRef.push(msg); }catch(e){}
+    if(opts && opts.retain){ try{ this._retRef.child(enc(topic)).set(msg); }catch(e){} }
+    return this;
+  };
+  Client.prototype.end=function(force){
+    this._ended=true;
+    try{ this._connRef.off('value', this._connCb); }catch(e){}
+    try{ if(this._busRef) this._busRef.off(); }catch(e){}
+    this._subs=[];
+    return this;
+  };
+
+  window.mqtt={ connect:function(url, opts){ return new Client(); } };
+})();
+</script>
+<script>
   /* ===== מאוחד: בחירת תפקיד + לוח מורה + תלמיד (תבנית שיעור 0) ===== */
   (function(){
     var NS="bep-delek-2026";
