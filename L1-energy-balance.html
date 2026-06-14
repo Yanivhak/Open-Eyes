@@ -212,6 +212,19 @@
     .ov-hint { color:#BFE0CC; margin-top:16px; text-align:center; max-width:540px; line-height:1.55; font-size:15px; }
     #join-box { display:none; margin-top:18px; text-align:center; }
     #join-box.on { display:block; }
+    #join-box input{ display:block; width:240px; margin:10px auto; }
+    #in-nick{ text-transform:none; letter-spacing:normal; }
+    #join-msg{ margin-top:10px; font-size:15px; min-height:20px; color:#FFB4A8; }
+    #bd-roster{ margin:10px auto 4px; max-width:560px; width:90%; }
+    .bd-roster-h{ color:#BFE0CC; font-size:14px; margin-bottom:8px; text-align:center; }
+    #bd-roster-list{ display:flex; flex-direction:column; gap:6px; max-height:230px; overflow-y:auto; }
+    .bd-roster-row{ display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,.07); border-radius:10px; padding:9px 14px; font-size:17px; }
+    .bd-roster-row .rnm{ font-weight:700; }
+    .rst{ font-size:14px; padding:3px 11px; border-radius:20px; white-space:nowrap; }
+    .rst.w1{ background:rgba(39,174,96,.28); }
+    .rst.w2{ background:rgba(232,185,35,.32); color:#3a2e00; }
+    .rst.done{ background:rgba(255,255,255,.2); }
+    .bd-roster-empty{ color:#8FB89C; font-size:14px; text-align:center; padding:12px; }
     #join-box input { font-family:Arial; font-size:22px; text-align:center; letter-spacing:.15em; text-transform:uppercase; padding:12px 18px; border-radius:12px; border:2px solid #E8B923; background:#fff; color:#14502E; width:min(220px,70vw); direction:ltr; outline:none; }
     .bd-conn { display:flex;align-items:center;gap:8px;font-size:14px;color:#BFE0CC;margin-bottom:16px; } .bd-conn .d{width:11px;height:11px;border-radius:50%;background:#c0392b;} .bd-conn .d.on{background:#27ae60;box-shadow:0 0 8px #27ae60;}
     .bd-grid { display:flex;gap:42px;align-items:center;flex-wrap:wrap;justify-content:center; }
@@ -244,7 +257,9 @@
     </div>
     <div id="join-box">
       <input type="text" id="in-code" placeholder="קוד החדר" maxlength="6" autocomplete="off">
+      <input type="text" id="in-nick" placeholder="הכינוי שלך" maxlength="16" autocomplete="off">
       <button class="ov-btn coral" id="btnJoinGo" style="font-size:18px;padding:13px 24px;">הצטרף</button>
+      <div id="join-msg"></div>
     </div>
     <p class="ov-hint" id="home-hint">המורה לוחץ „אני המורה”. התלמידים נכנסים דרך ה-QR שהמורה מקרין (או „אני תלמיד” + קוד החדר).</p>
   </div>
@@ -257,6 +272,7 @@
       <div class="bd-qr"><img id="bd-qr" alt="QR"></div>
     </div>
     <div class="bd-cnt"><div class="n" id="bd-num">0</div><div class="t">תלמידים סיימו</div></div>
+    <div id="bd-roster"><div class="bd-roster-h">תלמידים בחדר</div><div id="bd-roster-list"></div></div>
     <button class="ov-btn green" id="bd-reveal" disabled>חשוף תוצאות</button>
     <div id="bd-results">
       <div class="rh" id="bd-sortlab">ממוין לפי זמן סיום</div>
@@ -306,14 +322,14 @@
         c.on('error',function(){ if(!opened){ c.end(true); tryB(); } });
         c.on('message',function(t,payload){ var m; try{m=JSON.parse(payload.toString());}catch(e){return;} if(!m||m.from===myId) return;
           if(m.t==='host_claim'){ lockHost(); return; }
-          if(role==='host' && m.t==='result' && m.name){ onResult(m); }
+          if(role==='host'){ if(m.t==='join' && m.name){ onJoin(m); return; } if(m.t==='progress'){ onProgress(m); return; } if(m.t==='result' && m.name){ onResult(m); return; } }
         });
       })();
     }
 
     /* --- מורה (לוח) --- */
-    var results=new Map(), revealed=false, sortBy='time';
-    function onResult(m){ results.set(String(m.name), {name:String(m.name).slice(0,16), time:+m.time, peak:Math.max(0,Math.min(10,+m.peak||0)), items:Math.max(0,+m.items||0)}); var n=results.size; $('bd-num').textContent=n; $('bd-reveal').disabled=n===0; if(revealed) renderBd(); }
+    var results=new Map(), roster=new Map(), revealed=false, sortBy='time', myNick='תלמיד', ackTimer=null, joinMaster=null, progTimer=null, validated=false;
+    function onResult(m){ results.set(String(m.name), {name:String(m.name).slice(0,16), time:+m.time, peak:Math.max(0,Math.min(10,+m.peak||0)), items:Math.max(0,+m.items||0)}); var rr=roster.get(m.from); if(rr){ rr.finished=true; } else { roster.set(m.from,{id:m.from,name:String(m.name).slice(0,16),world:2,finished:true}); } renderRoster(); var n=results.size; $('bd-num').textContent=n; $('bd-reveal').disabled=n===0; if(revealed) renderBd(); }
     function renderBd(){
       var arr=[...results.values()];
       arr.sort(function(a,b){ return sortBy==='time' ? (a.time-b.time) : ((a.peak-b.peak)||(a.time-b.time)); });
@@ -323,6 +339,9 @@
       $('bd-sortlab').textContent = sortBy==='time' ? 'ממוין לפי זמן סיום' : 'ממוין לפי שיא מטען עודף';
       $('bd-sort').textContent = sortBy==='time' ? 'מיין לפי שיא מטען עודף' : 'מיין לפי זמן';
     }
+    function onJoin(m){ roster.set(m.from, {id:m.from, name:String(m.name).slice(0,16), world:1, finished:false}); renderRoster(); if(client) try{ client.publish(NS+"/"+ROOM+"/ack/"+m.from, JSON.stringify({from:myId,t:'ack',to:m.from}), {qos:1}); }catch(e){} }
+    function onProgress(m){ var r=roster.get(m.from); if(!r||r.finished) return; r.world=(+m.world>=2?2:1); renderRoster(); }
+    function renderRoster(){ var arr=[...roster.values()]; var box=$('bd-roster-list'); if(!box) return; if(!arr.length){ box.innerHTML='<div class="bd-roster-empty">ממתינים לתלמידים…</div>'; return; } box.innerHTML=arr.map(function(r){ var st=r.finished?'<span class="rst done">✅ סיים</span>':(r.world>=2?'<span class="rst w2">🟡 עולם 2</span>':'<span class="rst w1">🟢 עולם 1</span>'); return '<div class="bd-roster-row"><span class="rnm">'+esc(r.name)+'</span>'+st+'</div>'; }).join(''); }
     function startHost(){
       role='host';
       ROOM=Math.random().toString(36).slice(2,6).toUpperCase().replace(/[^A-Z0-9]/g,'X');
@@ -334,15 +353,31 @@
     }
 
     /* --- תלמיד --- */
-    function startPlayer(room){
-      role='player'; ROOM=room;
-      showOv(null);                              /* הסתר שכבות → המשחק מוצג */
-      var w=$('nick-wrap'); if(w) w.style.display='block';
-      connect(ROOM);                              /* מתחבר כדי לשלוח תוצאה בסיום */
+    function joinMsg(txt,err){ var e=$('join-msg'); if(e){ e.textContent=txt; e.style.color=err?'#FFB4A8':'#BFE0CC'; } }
+    function joinFail(msg){ if(ackTimer){clearTimeout(ackTimer);ackTimer=null;} if(joinMaster){clearTimeout(joinMaster);joinMaster=null;} if(client){try{client.end(true);}catch(e){}} client=null; window.__mqc=null; role=null; validated=false; var b=$('btnJoinGo'); if(b) b.disabled=false; joinMsg(msg,true); }
+    function onAck(){ if(validated) return; validated=true; if(ackTimer){clearTimeout(ackTimer);ackTimer=null;} if(joinMaster){clearTimeout(joinMaster);joinMaster=null;} joinMsg('',false); showOv(null); startProgress(); }
+    function startProgress(){ if(progTimer) clearInterval(progTimer); progTimer=setInterval(function(){ if(role!=='player'||!client) return; var ps=(window.__game&&window.__game.players)||[]; var me=null; for(var k=0;k<ps.length;k++){ if(ps[k]&&!ps[k].isBot){ me=ps[k]; break; } } if(!me||!me.car) return; if(me.car.finished){ clearInterval(progTimer); progTimer=null; return; } var world=(me.car.lap>=2?2:1); try{ client.publish(NS+"/"+ROOM+"/"+myId, JSON.stringify({from:myId,t:'progress',name:myNick,world:world}), {qos:0}); }catch(e){} }, 4000); }
+    function joinRoom(code,nick){
+      role='player'; ROOM=code; myNick=nick||'תלמיד'; validated=false;
+      var b=$('btnJoinGo'); if(b) b.disabled=true; joinMsg('מתחבר…',false);
+      if(joinMaster) clearTimeout(joinMaster);
+      joinMaster=setTimeout(function(){ if(!validated) joinFail('הקוד שגוי, או שאין מורה פעיל בחדר. בדקו את הקוד ונסו שוב.'); }, 10000);
+      var i=0;
+      (function tryB(){
+        if(typeof mqtt==='undefined'){ joinFail('אין חיבור לאינטרנט. בדקו ונסו שוב.'); return; }
+        if(i>=BROKERS.length){ return; }
+        var cc=mqtt.connect(BROKERS[i++],{clientId:'u_'+myId+'_'+Math.random().toString(36).slice(2,6),clean:true,connectTimeout:5000,reconnectPeriod:2000});
+        var opened=false, advanced=false;
+        function nextB(){ if(advanced) return; advanced=true; try{cc.end(true);}catch(e){} tryB(); }
+        cc.on('connect',function(){ if(opened) return; opened=true; client=cc; window.__mqc=cc; cc.subscribe(NS+"/"+ROOM+"/ack/"+myId,{qos:1},function(){ try{ cc.publish(NS+"/"+ROOM+"/"+myId, JSON.stringify({from:myId,t:'join',name:myNick}), {qos:1}); }catch(e){} if(ackTimer) clearTimeout(ackTimer); ackTimer=setTimeout(function(){ if(!validated) joinFail('הקוד שגוי, או שאין מורה פעיל בחדר. בדקו את הקוד ונסו שוב.'); }, 4500); }); });
+        cc.on('message',function(t,payload){ var m; try{m=JSON.parse(payload.toString());}catch(e){return;} if(!m||m.from===myId) return; if(m.t==='ack' && m.to===myId){ onAck(); } });
+        cc.on('error',function(){ if(!opened) nextB(); });
+        cc.on('close',function(){ if(!opened) nextB(); });
+      })();
     }
     window.__pubResult=function(car){
       if(role!=='player' || !window.__mqc || typeof mqtt==='undefined' || !car) return;
-      var nm=(($('nick')||{}).value||'').trim().slice(0,16)||'תלמיד';
+      if(progTimer){ clearInterval(progTimer); progTimer=null; } var nm=myNick||'תלמיד';
       try{ window.__mqc.publish(NS+"/"+ROOM+"/"+myId, JSON.stringify({from:myId,t:'result',name:nm,time:car.finishTime,peak:car.boxesPeak,items:Object.keys(car.taken||{}).length}), {qos:1,retain:true}); }catch(e){}
     };
 
@@ -350,7 +385,7 @@
     $('btnHost').onclick=startHost;
     $('btnJoin').onclick=function(){ $('join-box').classList.add('on'); $('in-code').focus(); };
     $('btnSolo').onclick=function(){ showOv(null); };   /* שחק לבד: ללא חדר, ללא שליחה */
-    $('btnJoinGo').onclick=function(){ var c=($('in-code').value||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,''); if(c.length<3){ alert('הקלידו את קוד החדר.'); return; } startPlayer(c); };
+    $('btnJoinGo').onclick=function(){ var c=($('in-code').value||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,''); var nk=($('in-nick').value||'').trim().slice(0,16); if(c.length<3){ joinMsg('הקלידו את קוד החדר.',true); return; } if(!nk){ joinMsg('הקלידו כינוי.',true); return; } joinRoom(c,nk); };
     $('in-code').addEventListener('keydown',function(e){ if(e.key==='Enter') $('btnJoinGo').click(); });
     $('bd-reveal').onclick=function(){ revealed=true; $('bd-results').classList.add('on'); renderBd(); };
     $('bd-sort').onclick=function(){ sortBy = sortBy==='time' ? 'peak' : 'time'; renderBd(); };
@@ -360,7 +395,7 @@
     var bds=$('bd-student'); if(bds) bds.onclick=function(e){ if(e.target===bds) bds.style.display='none'; };
 
     /* --- כניסה --- */
-    if(urlRoom){ startPlayer(urlRoom); }           /* הגעה דרך QR/קישור → תלמיד ישירות */
+    if(urlRoom){ showOv('role-home'); $('join-box').classList.add('on'); var ic=$('in-code'); if(ic) ic.value=urlRoom; var inN=$('in-nick'); if(inN) inN.focus(); }           /* הגעה דרך QR/קישור → תלמיד ישירות */
     else { showOv('role-home'); }                  /* כתובת רגילה → מסך בחירת תפקיד */
   })();
   </script>
