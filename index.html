@@ -2,184 +2,73 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>בעיניים פקוחות · פעילויות לימודיות בתזונה</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>כלים למורה</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Secular+One&family=Heebo:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg1:#0D1430; --bg2:#161F3D; --bg-top:#212C54;
-    --panel:#1A2446; --panel-hi:#222F5A; --line:rgba(255,255,255,.12);
-    --ink:#F4F1EA; --dim:#9AA6C8;
-    --gold:#FFD166; --teal:#2EC4B6; --coral:#FF6B6B; --violet:#8D8DF2;
-    --shadow:0 14px 38px rgba(0,0,0,.40);
-  }
-  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
-  html,body{min-height:100%;}
-  body{
-    font-family:'Heebo',Arial,"Arial Hebrew",sans-serif;
-    color:var(--ink);
-    background:
-      radial-gradient(1100px 620px at 82% -10%, var(--bg-top) 0%, transparent 55%),
-      radial-gradient(900px 500px at 5% 8%, rgba(141,141,242,.16) 0%, transparent 50%),
-      linear-gradient(180deg, var(--bg2) 0%, var(--bg1) 100%);
-    background-attachment:fixed;
-    min-height:100vh; -webkit-font-smoothing:antialiased;
-    padding:clamp(22px,5vw,52px) clamp(16px,5vw,40px) 60px; line-height:1.5;
-  }
-  .wrap{max-width:1040px; margin:0 auto;}
-
-  /* ---------- מותג ---------- */
-  .brand{display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:6px;}
-  .dots{display:flex; gap:8px;}
-  .dots i{width:14px; height:14px; border-radius:50%; display:block; box-shadow:0 0 14px currentColor;}
-  .dots i:nth-child(1){background:var(--coral); color:var(--coral)}
-  .dots i:nth-child(2){background:var(--gold); color:var(--gold)}
-  .dots i:nth-child(3){background:var(--teal); color:var(--teal)}
-  .dots i:nth-child(4){background:var(--violet); color:var(--violet)}
-  .brand b{font-weight:900; font-size:clamp(18px,3.5vw,22px); letter-spacing:-.3px;}
-  .tagline{text-align:center; color:var(--dim); font-weight:600; font-size:clamp(13px,2.6vw,15px); margin-bottom:clamp(30px,6vw,50px);}
-
-  /* ---------- כותרת ראשית ---------- */
-  .hero{text-align:center; margin-bottom:clamp(30px,6vw,48px);}
-  .hero h1{
-    color:var(--gold); font-weight:900;
-    font-size:clamp(36px,7.5vw,64px); line-height:1.05; letter-spacing:-1.2px;
-    text-shadow:0 3px 24px rgba(255,209,102,.22);
-  }
-  /* חתימת ספקטרום מתחת לכותרת */
-  .spectrum{width:clamp(150px,40vw,210px); height:5px; margin:18px auto 0; border-radius:999px;
-    background:linear-gradient(90deg,var(--coral),var(--gold) 38%,var(--teal) 70%,var(--violet));}
-  .hero p{color:var(--ink); opacity:.82; font-size:clamp(15px,3vw,19px); max-width:540px; margin:18px auto 0;}
-
-  /* ---------- רשת כרטיסים ---------- */
-  .grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(270px, 1fr)); gap:clamp(16px,3vw,24px);}
-  .card{
-    --c:var(--gold);
-    display:flex; flex-direction:column;
-    background:var(--panel); border:1px solid var(--line); border-radius:22px;
-    padding:clamp(22px,4vw,28px);
-    text-decoration:none; color:inherit; box-shadow:var(--shadow);
-    position:relative; overflow:hidden;
-    transition:transform .15s ease, background .15s ease, border-color .15s ease;
-  }
-  .card::before{content:""; position:absolute; inset:0 0 auto 0; height:5px; background:var(--c);}
-  .card::after{content:""; position:absolute; inset:auto -40% -60% auto; width:240px; height:240px; border-radius:50%;
-    background:radial-gradient(circle, var(--c) 0%, transparent 70%); opacity:.12; pointer-events:none;}
-  .card:hover{transform:translateY(-6px); background:var(--panel-hi); border-color:color-mix(in srgb, var(--c) 55%, transparent);}
-  .card:focus-visible{outline:3px solid var(--c); outline-offset:3px;}
-
-  .card-head{display:flex; align-items:center; gap:14px; margin-bottom:14px;}
-  .num{
-    flex:none; min-width:52px; border-radius:14px;
-    background:var(--c); color:#0D1430;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    padding:7px 10px; box-shadow:0 4px 0 rgba(0,0,0,.30); line-height:1;
-  }
-  .num small{font-size:10px; font-weight:800; opacity:.72; letter-spacing:.5px; margin-bottom:3px;}
-  .num b{font-size:25px; font-weight:900;}
-  .card h2{font-size:clamp(21px,4vw,26px); font-weight:900; line-height:1.15;}
-
-  .kind{display:inline-block; align-self:flex-start; font-size:12px; font-weight:800; letter-spacing:.3px;
-    color:var(--c); border:1.5px solid color-mix(in srgb, var(--c) 45%, transparent);
-    padding:3px 11px; border-radius:999px; margin-bottom:11px;}
-  .desc{color:var(--dim); font-size:clamp(14px,2.8vw,15.5px); flex:1; line-height:1.55;}
-
-  .cta{display:inline-flex; align-items:center; gap:8px; align-self:flex-start; margin-top:20px;
-    background:var(--c); color:#0D1430; font-weight:900; font-size:16px; padding:11px 20px; border-radius:14px;
-    box-shadow:0 4px 0 rgba(0,0,0,.30); transition:filter .12s ease;}
-  .card:hover .cta{filter:brightness(1.08);}
-  .cta svg{width:17px; height:17px;}
-
-  /* ---------- כותרת תחתונה ---------- */
-  .foot{text-align:center; color:var(--dim); font-size:13px; margin-top:clamp(34px,7vw,52px); line-height:1.7;}
-  .foot b{color:var(--ink);}
-
-  @media (prefers-reduced-motion: reduce){ *{transition:none !important;} .card:hover{transform:none;} }
+:root{
+  --bg1:#05080f; --bg2:#0a1020;
+  --ink:#f7f4ec; --ink-dim:#aab4cf;
+  --gold:#ffd166; --teal:#2ec4b6; --violet:#8d8df2;
+  --card:#22325c; --card-hi:#2c3f72;
+}
+*{box-sizing:border-box;}
+html,body{margin:0; padding:0; min-height:100%;}
+body{font-family:'Heebo',sans-serif; background:radial-gradient(1200px 700px at 75% -10%, #16223f 0%, var(--bg2) 45%, var(--bg1) 100%); color:var(--ink); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;}
+.wrap{width:100%; max-width:860px; text-align:center;}
+h1{font-family:'Secular One'; font-size:clamp(34px,5.5vw,58px); margin:0 0 8px; color:var(--gold);}
+.sub{font-size:18px; color:var(--ink-dim); max-width:520px; margin:0 auto 36px; line-height:1.5;}
+.cards{display:flex; gap:18px; flex-wrap:wrap; justify-content:center;}
+.card{flex:1 1 220px; max-width:260px; background:var(--card); border-radius:22px; padding:30px 22px; cursor:pointer; text-decoration:none; color:var(--ink); transition:transform .15s ease, background .15s ease; border:2px solid transparent;}
+.card:hover{transform:translateY(-4px); background:var(--card-hi); border-color:var(--gold);}
+.card .emoji{font-size:50px; margin-bottom:12px;}
+.card h2{font-family:'Secular One'; font-size:24px; margin:0 0 8px;}
+.card p{font-size:14px; color:var(--ink-dim); margin:0; line-height:1.5;}
+.card.combo{border-color:var(--teal);}
+.card.combo:hover{border-color:var(--gold);}
+.tag{display:inline-block; font-size:12px; font-weight:700; color:var(--teal); margin-bottom:6px;}
+.foot{margin-top:34px; font-size:13px; color:var(--ink-dim); line-height:1.6;}
+.foot a{color:var(--gold);}
 </style>
 </head>
 <body>
-  <div class="wrap">
-
-    <header>
-      <div class="brand">
-        <span class="dots"><i></i><i></i><i></i><i></i></span>
-        <b>בעיניים פקוחות</b>
-      </div>
-      <p class="tagline">חשיבה ביקורתית ואורח חיים בריא · כיתות ז׳–ט׳</p>
-    </header>
-
-    <section class="hero">
-      <h1>פעילויות לימודיות בתזונה</h1>
-      <div class="spectrum"></div>
-      <p>בחרו שיעור כדי לפתוח את הפעילות האינטראקטיבית שלו.</p>
-    </section>
-
-    <!-- הכרטיסים נוצרים אוטומטית מרשימת LESSONS שבסקריפט למטה -->
-    <main class="grid" id="grid"></main>
-    <noscript><p style="text-align:center;color:var(--dim);margin-top:20px">להצגת הפעילויות יש לאפשר JavaScript בדפדפן.</p></noscript>
-
-    <footer class="foot">
-      שיעורים נוספים יתווספו בהמשך · <b>בעיניים פקוחות</b>
-    </footer>
-
+<div class="wrap">
+  <h1>🎓 כלים למורה</h1>
+  <p class="sub">בחרו כלי. אפשר חידון טריוויה, מצגת תמונות, או את שניהם יחד עם מעבר ביניהם.</p>
+  <div class="cards">
+    <a class="card" href="teachermontage.html" target="_blank" rel="noopener">
+      <div class="emoji">🎬</div>
+      <h2>מצגת</h2>
+      <p>תמונות ומוזיקה על המסך.</p>
+    </a>
+    <a class="card" href="teacherquiz.html" target="_blank" rel="noopener">
+      <div class="emoji">🧠</div>
+      <h2>חידון</h2>
+      <p>טריוויה, והתלמידים משחקים מהטלפון.</p>
+    </a>
+    <a class="card combo" href="teachercombo.html" target="_blank" rel="noopener">
+      <span class="tag">שניהם יחד</span>
+      <div class="emoji">🎬🧠</div>
+      <h2>מצגת + חידון</h2>
+      <p>שני הכלים בדף אחד, עם מעבר ביניהם בלי לאבד כלום.</p>
+    </a>
   </div>
+  <p class="foot">כל כלי נפתח בלשונית נפרדת.<br>לא בטוחים מאיפה להתחיל? יש <a href="teacher-guide.html" target="_blank" rel="noopener">דף הסבר קצר למורים</a>.</p>
 
-<script>
-  /* =================================================================
-     רשימת הפעילויות — זה כל מה שצריך לערוך כדי להוסיף/לשנות שיעור.
-     להוספת פעילות: העתיקו שורה אחת, עדכנו את השדות. זה הכול.
-
-       n     = מספר השיעור (מוצג בתג)
-       title = שם הפעילות
-       kind  = סוג הפעילות (התגית הקטנה)
-       desc  = תיאור קצר
-       file  = שם קובץ ה-HTML של הפעילות (חייב להיות באותה תיקייה)
-       color = צבע הכרטיס. בחרו אחד:
-               "var(--teal)" / "var(--coral)" / "var(--violet)" / "var(--gold)"
-     ================================================================= */
-  const LESSONS = [
-    {
-      n: "0",
-      title: "באיזו מגירה?",
-      kind:  "משחק רב-משתתפים",
-      desc:  "משחק מיון בכיתה: האם כל דבר במציאות באמת נכנס למגירה אחת? מה קורה כשמשהו לא מסכים להסתדר?",
-      file:  "0-which-drawer.html",
-      color: "var(--teal)"
-    },
-    {
-      n: "1",
-      title: "אותו רכב, עולם אחר",
-      kind:  "משחק מרוץ",
-      desc:  "מרוץ בשני עולמות: בעולם של מחסור כדאי לאסוף כל טיפת דלק — בעולם של שפע אותו הרגל בדיוק מאט אותך ומפסיד. וזו בכלל לא חולשה.",
-      file:  "L1-energy-balance.html",
-      color: "var(--coral)"
-    },
-    {
-      n: "3",
-      title: "בלשי המטבח",
-      kind:  "משחק בילוש",
-      desc:  "חוקרים מוצרי מזון כמו בלשים: כמה מוצר התרחק מהטבע, וכמה הוא 'מעובד' — כי אי אפשר לבקר משהו לפני שמבינים אותו.",
-      file:  "L3-kitchen-detectives.html",
-      color: "var(--violet)"
-    }
-  ];
-
-  /* ---- מנוע הרינדור (אין צורך לגעת מכאן והלאה) ---- */
-  const ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>';
-  const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-
-  document.getElementById("grid").innerHTML = LESSONS.map(L => `
-    <a class="card" style="--c:${esc(L.color)}" href="${esc(L.file)}">
-      <div class="card-head">
-        <div class="num"><small>שיעור</small><b>${esc(L.n)}</b></div>
-        <h2>${esc(L.title)}</h2>
-      </div>
-      <span class="kind">${esc(L.kind)}</span>
-      <p class="desc">${esc(L.desc)}</p>
-      <span class="cta">פתחו את הפעילות ${ARROW}</span>
-    </a>`).join("");
-</script>
+  <div style="margin-top:30px; padding-top:22px; border-top:1px solid rgba(255,255,255,.12);">
+    <div style="font-size:14px; color:var(--ink-dim);">נבנה על ידי</div>
+    <div style="font-family:'Secular One'; font-size:20px; color:var(--gold); margin:4px 0 12px;">ד״ר יניב חכים</div>
+    <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; align-items:center;">
+      <a href="mailto:yanivhpro@gmail.com" style="color:var(--ink); text-decoration:none; background:var(--card); border-radius:10px; padding:9px 16px; font-size:14px;">✉️ yanivhpro@gmail.com</a>
+      <a href="https://wa.me/972544617463" target="_blank" rel="noopener" style="color:var(--ink); text-decoration:none; background:var(--card); border-radius:10px; padding:9px 16px; font-size:14px;">💬 וואטסאפ</a>
+      <a href="tel:+972544617463" style="color:var(--ink); text-decoration:none; background:var(--card); border-radius:10px; padding:9px 16px; font-size:14px;">📞 חיוג</a>
+    </div>
+  </div>
+</div>
 </body>
 </html>
